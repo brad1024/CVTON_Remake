@@ -1,0 +1,53 @@
+                EMA_decay: 0.9999                        
+              add_cd_loss: True                          	[default: False]
+               add_d_loss: True                          	[default: False]
+              add_l1_loss: False                         
+           add_lpips_loss: False                         
+              add_pd_loss: True                          	[default: False]
+             add_vgg_loss: True                          	[default: False]
+               batch_size: 16                            	[default: 1]
+                    beta1: 0.0                           
+                    beta2: 0.999                         
+                  bpgm_id: 256_26_3_mpv_192              	[default: 256_3_5]
+               channels_D: 64                            
+               channels_G: 32                            
+          checkpoints_dir: ./checkpoints                 
+           continue_train: False                         
+                 dataroot: ./data/mpv                    
+                  dataset: mpv                           
+                 freq_fid: 5000                          
+               freq_print: 1000                          
+           freq_save_ckpt: 10000                         
+         freq_save_latest: 10000                         
+           freq_save_loss: 2000                          
+         freq_smooth_loss: 250                           
+                  gpu_ids: [0]                           
+                 img_size: 256                           
+                lambda_l1: 1.0                           
+          lambda_labelmix: 10.0                          
+             lambda_lpips: 1.0                           
+               lambda_vgg: 10.0                          	[default: 1.0]
+       loaded_latest_iter: 0                             	[default: None]
+                     lr_d: 0.0004                        
+                     lr_g: 0.0001                        
+                     name: C-VTON-MPV                    	[default: None]
+                   no_EMA: False                         
+      no_balancing_inloss: False                         
+                    no_bg: False                         
+              no_labelmix: True                          	[default: False]
+                   no_seg: False                         
+         no_spectral_norm: False                         
+               num_epochs: 100                           
+           num_res_blocks: 6                             
+          param_free_norm: batch                         
+               patch_size: 64                            
+                    phase: train                         
+                     seed: 42                            
+              seg_edit_id: 256                           
+             segmentation: ['densepose']                 	[default: ['body']]
+                 spade_ks: 3                             
+               train_size: 0.95                          
+          transform_cloth: True                          	[default: False]
+                 val_size: 0.05                          
+               which_iter: latest                        
+                    z_dim: 9                             
