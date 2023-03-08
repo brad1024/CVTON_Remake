@@ -30,7 +30,9 @@ class OASIS_Generator(nn.Module):
             raise NotImplementedError
         
         semantic_nc = np.sum([nc for mode, nc in zip(["body", "cloth", "densepose"], opt.semantic_nc) if mode in opt.segmentation])
-        
+        print('gen_1 '+semantic_nc)
+        #self.semantic_num = semantic_nc
+
         self.up = nn.Upsample(scale_factor=2)
         self.body = nn.ModuleList([])
         for i in range(len(self.channels)-1):

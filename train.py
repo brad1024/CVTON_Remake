@@ -8,13 +8,14 @@ import dataloaders.dataloaders as dataloaders
 import utils.utils as utils
 from utils.fid_scores import fid_pytorch
 import config
-
+import time
+import os
 from torch.cuda.amp import GradScaler
-
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 if __name__ == '__main__':
     #--- read options ---#
     opt = config.read_arguments(train=True)
-
+    #
     #--- create utils ---#
     timer = utils.timer(opt)
     visualizer_losses = utils.losses_saver(opt)
@@ -22,7 +23,9 @@ if __name__ == '__main__':
     dataloader, dataloader_val = dataloaders.get_dataloaders(opt)
     im_saver = utils.image_saver(opt)
     fid_computer = fid_pytorch(opt, dataloader_val)
-
+    #print('semantic')
+    #print(opt.semantic_nc)
+    #time.sleep(5)
     #--- create models ---#
     model = models.OASIS_model(opt)
     model = models.put_on_multi_gpus(opt, model)

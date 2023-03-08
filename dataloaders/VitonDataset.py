@@ -32,7 +32,7 @@ semantic_cloth_labels = [
     [0, 128, 64],
     [0, 0, 64],
     [0, 128, 192]
-]# 20
+]
 
 semantic_densepose_labels = [
     [0, 0, 0],
@@ -60,7 +60,7 @@ semantic_densepose_labels = [
 	[255, 20, 147],
 	[255, 160, 122],
 	[127, 255, 212]
-]#25
+]
 
 semantic_body_labels = [
     [127, 127, 127],
@@ -78,7 +78,7 @@ semantic_body_labels = [
     [255, 255, 127],
     [255, 0, 0],
     [255, 0, 255]
-]#15
+]
 
 
 class VitonDataset(Dataset):

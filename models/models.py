@@ -53,9 +53,7 @@ class OASIS_model(nn.Module):
         #--- load previous checkpoints if needed ---
         self.load_checkpoints()
         if opt.transform_cloth:
-            #bpgm_load(self.netG.bpgm, "./bpgm/checkpoints/bpgm_final_%s.pth" % (opt.bpgm_id))
-            bpgm_load(self.netG.bpgm, "./bpgm/checkpoints/bpgm_final_256_26_3_viton.pth")
-
+            bpgm_load(self.netG.bpgm, "./bpgm/checkpoints/bpgm_final_%s.pth" % (opt.bpgm_id))
         
         #--- perceptual loss ---#
         if opt.phase in {"train", "train_whole"}:
@@ -413,19 +411,19 @@ def preprocess_input(opt, data):
         
     label_body_map = data['body_label']
     bs, _, h, w = label_body_map.size()
-    nc = opt.semantic_nc[0]
+    nc = opt.semantic_nc[0]#16
     input_body_label = torch.cuda.FloatTensor(bs, nc, h, w).zero_()
     input_body_semantics = input_body_label.scatter_(1, label_body_map, 1.0)
     
     label_cloth_map = data['cloth_label']
     bs, _, h, w = label_cloth_map.size()
-    nc = opt.semantic_nc[1]
+    nc = opt.semantic_nc[1]#16
     input_cloth_label = torch.cuda.FloatTensor(bs, nc, h, w).zero_()
     input_cloth_semantics = input_cloth_label.scatter_(1, label_cloth_map, 1.0)
     
     label_densepose_map = data['densepose_label']
     bs, _, h, w = label_densepose_map.size()
-    nc = opt.semantic_nc[2]
+    nc = opt.semantic_nc[2]#26
     input_densepose_label = torch.cuda.FloatTensor(bs, nc, h, w).zero_()
     input_densepose_semantics = input_densepose_label.scatter_(1, label_densepose_map, 1.0)
     

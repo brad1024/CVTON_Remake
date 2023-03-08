@@ -1,4 +1,4 @@
-python train.py \
+python3 train.py \
 -n C-VTON-MPV \
 --dataset mpv \
 --batch_size 16 \

@@ -19,7 +19,7 @@ from tensorboardX import SummaryWriter
 from bpgm.model.models import BPGM
 from bpgm.model.utils import load_checkpoint, save_checkpoint
 from bpgm.utils.args import get_opt
-from bpgm.utils.dataset import DataLoader, MPVDataset, VitonDataset
+from bpgm.utils.dataset import DataLoader, MPVDataset, VitonDataset, VitonHDDataset
 from bpgm.utils.losses import VGGLoss
 from bpgm.utils.visualization import board_add_images
 
@@ -138,6 +138,8 @@ def main():
         train_dataset = MPVDataset(opt)
     elif opt.dataset == "viton":
         train_dataset = VitonDataset(opt)
+    elif opt.dataset == "vitonHD":
+        train_dataset = VitonHDDataset(opt)
     else:
         raise NotImplementedError
     

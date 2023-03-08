@@ -266,9 +266,8 @@ class BPGM(nn.Module):
         super(BPGM, self).__init__()
         # self.extractionA = FeatureExtraction(3+16, ngf=64, n_layers=3, norm_layer=nn.BatchNorm2d) 
         if "bpgm_id" in opt:
-            #bpgm_id = 256_26_3
-            n_layers = int(math.log(int(opt.bpgm_id.split("_")[0]), 2)) - 5 #3
-            self.resolution = int(opt.bpgm_id.split("_")[0]) #256
+            n_layers = int(math.log(int(opt.bpgm_id.split("_")[0]), 2)) - 5
+            self.resolution = int(opt.bpgm_id.split("_")[0])
             self.resolution = (self.resolution, int(self.resolution * (opt.img_size[1] / opt.img_size[0])))
             
             self.in_channels = int(opt.bpgm_id.split("_")[1])
@@ -288,7 +287,7 @@ class BPGM(nn.Module):
         assert n_layers > 0, "img_size must be >= 64"
         
         ngf = 2 ** (3 - n_layers) * 64
-
+        
         self.extractionA = FeatureExtraction(self.in_channels, ngf=ngf, n_layers=n_layers, norm_layer=nn.BatchNorm2d)
             
         self.extractionB = FeatureExtraction(3, ngf=ngf, n_layers=n_layers, norm_layer=nn.BatchNorm2d)
@@ -296,17 +295,7 @@ class BPGM(nn.Module):
         self.correlation = FeatureCorrelation()
         self.regression = FeatureRegression(input_nc=self.resolution[1], output_dim=2 * opt.grid_size**2, linear_dim=linear_dim, use_cuda=True)
         self.gridGen = TpsGridGen(*self.resolution, use_cuda=True, grid_size=opt.grid_size)
-
-        print("img size")
-        print(opt.img_size)
-        print("in_channels")
-        print(self.in_channels)
-        print("ngf")
-        print(ngf)
-        print("n_layers")
-        print(n_layers)
-
-
+        
     def forward(self, inputA, inputB):
         featureA = self.extractionA(inputA)
         featureB = self.extractionB(inputB)
