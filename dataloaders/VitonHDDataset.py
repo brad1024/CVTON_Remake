@@ -145,11 +145,11 @@ vitonHD_parse_labels = [  # 15
     [0, 0, 85],  # one piece
     [0, 85, 85],  # pants
     [0, 128, 0],  # skirt
+    [0, 0, 0],  # background
     [0, 254, 254],  # right arm
     [51, 169, 220],  # left arm
     [169, 254, 85],  # right leg
     [85, 254, 169],  # left leg
-    [0, 0, 0],  # background
     [0, 119, 220],  # jacket
     [254, 169, 0],  # left foot
     [254, 254, 0],  # right foot
@@ -364,6 +364,15 @@ class VitonHDDataset(Dataset):
         else:
             agnostic = ""
 
+        human_parse = cv2.imread(os.path.join(self.db_path, "data", "image-parse-v3", df_row["poseA"]).replace(".jpg", ".png"))
+        human_parse = cv2.cvtColor(human_parse, cv2.COLOR_BGR2RGB)
+        human_parse = cv2.resize(human_parse, self.opt.img_size[::-1], interpolation=cv2.INTER_NEAREST)
+
+        human_parse_transf = np.zeros(self.opt.img_size)
+        for i, color in enumerate(vitonHD_parse_labels):
+            human_parse_transf[np.all(human_parse == color, axis=-1)] = i
+
+
         return {"image": {"I": image,
                           "C_t": cloth_image,
                           "I_m": masked_image},
@@ -373,7 +382,8 @@ class VitonHDDataset(Dataset):
                 "name": df_row["poseA"],
                 "agnostic": agnostic,
                 "original_size": original_size,
-                "label_centroid": body_label_centroid}
+                "label_centroid": body_label_centroid,
+                "human-parse": human_parse_transf}
 
     def __len__(self):
         return len(self.filepath_df)
