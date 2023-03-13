@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
             already_started = True
             cur_iter = epoch*len(dataloader) + i
-            image, label = models.preprocess_input(opt, data_i)
+            image, label, human_parsing = models.preprocess_input(opt, data_i)
 
             label_centroid = data_i["label_centroid"] if opt.add_pd_loss else None
             agnostic = data_i["agnostic"].cuda() if opt.bpgm_id.find("old") >= 0 else None
@@ -81,7 +81,7 @@ if __name__ == '__main__':
                 # im.save("orig.png")
 
                 with torch.no_grad():
-                    image["I_m"] = model_aux(image, label, "generate", None, agnostic=agnostic)
+                    image["I_m"] = model_aux(image, label, "generate", None, agnostic=agnostic, human_parsing=human_parsing)
 
 
                     # im = ((I_m[0].permute(1, 2, 0) * 0.5 + 0.5).cpu().numpy() * 255).astype(np.uint8)

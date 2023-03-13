@@ -88,7 +88,8 @@ class OASIS_Generator(nn.Module):
             raise NotImplementedError
         
         semantic_nc = np.sum([nc for mode, nc in zip(["body", "cloth", "densepose"], opt.semantic_nc) if mode in opt.segmentation])
-        
+        human_parsing_nc = 16
+
         self.up = nn.Upsample(scale_factor=2)
         self.body = nn.ModuleList([])
         for i in range(len(self.channels)-1):
@@ -96,9 +97,9 @@ class OASIS_Generator(nn.Module):
             self.body.append(ResnetBlock_with_SPADE(self.channels[i], self.channels[i+1], opt))
             
         self.fc = nn.Conv2d(semantic_nc + self.opt.z_dim, self.channels[0], 3, padding=1)
-        self.conv_img = nn.Conv2d(self.channels[-1] + opt.z_dim, 3, 3, padding=1)
+        self.conv_img = nn.Conv2d(self.channels[-1] + opt.z_dim, 19, 3, padding=1)
 
-    def forward(self, seg, z=None):
+    def forward(self, seg, z=None, human_parsing=None):
         scale = 1 / math.pow(2, self.opt.num_res_blocks-1)
         _z = F.interpolate(z, scale_factor=scale, recompute_scale_factor=False)
         _seg = F.interpolate(seg, scale_factor=scale, recompute_scale_factor=False, mode="nearest")
@@ -167,7 +168,7 @@ class OASIS_Simple(nn.Module):
         else:
             self.bpgm = None
         
-    def forward(self, I_m, C_t, body_seg, cloth_seg, densepose_seg, agnostic=None):
+    def forward(self, I_m, C_t, body_seg, cloth_seg, densepose_seg, agnostic=None, human_parsing=None):
         if agnostic is not None:
             C_transformed = self.transform_cloth_old(agnostic, C_t)
         else:
@@ -186,7 +187,7 @@ class OASIS_Simple(nn.Module):
         else:
             seg = torch.cat([seg_dict[mode] for mode in sorted(seg_dict.keys()) if mode in self.opt.segmentation], axis=1)
             
-        x = self.oasis(seg, z)
+        x = self.oasis(seg, z, human_parsing=human_parsing)
         return x
     
     def transform_cloth(self, seg, C_t):
