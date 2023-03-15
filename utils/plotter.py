@@ -81,7 +81,7 @@ def plot_simple_reconstructions(model, val_dataset, filename, opt, n_imgs=20, sa
         cloth_seg_swapped = []
         
         for I, I_m, C_t, C_t_flip, body_label, cloth_label, densepose_label, agnostic in dataloader:
-            image, label = models.preprocess_input(opt, {"image": {"I_m": I if opt.no_seg else I_m, "C_t": C_t, "C_t_flip": C_t_flip}, 
+            image, label, _ = models.preprocess_input(opt, {"image": {"I_m": I if opt.no_seg else I_m, "C_t": C_t, "C_t_flip": C_t_flip},
                                                          "body_label": body_label, "cloth_label": cloth_label, "densepose_label": densepose_label})
             agnostic = agnostic if opt.bpgm_id.find("old") >= 0 else None
             
@@ -173,7 +173,7 @@ def evaluate(model, val_dataset, opt):
         val_pred_y = []
         lpips = []
         for d in dataloader:
-                image, label = models.preprocess_input(opt, d)
+                image, label, _ = models.preprocess_input(opt, d)
                 agnostic = d["agnostic"] if opt.bpgm_id.find("old") >= 0 else None
                 
                 if opt.no_seg:

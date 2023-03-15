@@ -57,7 +57,7 @@ class fid_pytorch():
             netEMA.eval()
         with torch.no_grad():
             for i, data_i in enumerate(self.val_dataloader):
-                image, label = models.preprocess_input(self.opt, data_i)
+                image, label, human_parsing = models.preprocess_input(self.opt, data_i)
                 agnostic = data_i["agnostic"].cuda() if self.opt.bpgm_id.find("old") >= 0 else None
                 
                 if self.opt.no_EMA:

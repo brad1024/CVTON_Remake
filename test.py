@@ -53,7 +53,7 @@ if opt.phase == "test":
     
     for i, data_i in enumerate(test_dataloader):
         print(i, "/", len(test_dataloader), end="\r")
-        image, label = models.preprocess_input(opt, data_i)
+        image, label, human_parsing = models.preprocess_input(opt, data_i)
         # label["cloth_seg"] = model.module.edit_cloth_seg(image["C_t"], label["body_seg"], label["cloth_seg"])
         agnostic = data_i["agnostic"] if opt.bpgm_id.find("old") >= 0 else None
         
