@@ -409,7 +409,7 @@ def preprocess_input(opt, data):
     data['cloth_label'] = data['cloth_label'].long()
     data['body_label'] = data['body_label'].long()
     data['densepose_label'] = data['densepose_label'].long()
-    data['human_parssing'] = data['human_parsing'].long()
+    data['human_parsing'] = data['human_parsing'].long()
     
     data['cloth_label'] = data['cloth_label'].cuda()
     data['body_label'] = data['body_label'].cuda()
