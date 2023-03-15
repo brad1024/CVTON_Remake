@@ -6,7 +6,7 @@ import models.norms as norms
 
 from torch.nn import functional as F
 
-
+# segmentation discriminator
 class OASIS_Discriminator(nn.Module):
     def __init__(self, opt):
         super().__init__()
@@ -59,6 +59,7 @@ class OASIS_Discriminator(nn.Module):
         return ans
 
 
+# matching discriminator
 class CDiscriminator(nn.Module):
     
     def __init__(self, opt):
@@ -113,7 +114,7 @@ class CDiscriminator(nn.Module):
         x = self.linear(torch.cat((I_enc, C_t_enc), dim=1))
         return x
     
-
+# patch discriminator
 class PDiscriminator(nn.Module):
     
     def __init__(self, opt):

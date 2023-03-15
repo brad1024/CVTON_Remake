@@ -218,7 +218,7 @@ class image_saver():
 
         os.makedirs(self.path, exist_ok=True)
 
-    def visualize_batch(self, model, image, label, cur_iter, agnostic=None):
+    def visualize_batch(self, model, image, label, cur_iter, agnostic=None, human_parsing=None):
         if "body" in self.opt.segmentation:
             self.save_images(label["body_seg"], "body_seg", cur_iter, is_label=True)
         if "cloth" in self.opt.segmentation:
@@ -230,13 +230,17 @@ class image_saver():
         # print('--dense---------------00000----------')
         # time.sleep(30)
         self.save_images(image['I'], "real", cur_iter)
+        self.save_images(human_parsing, "real_parsing", cur_iter)
 
         with torch.no_grad():
             model.eval()
             fake = model.module.netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"],
                                      label["densepose_seg"], agnostic=agnostic)
+            fake_parsing = fake[:, 3:, :, :]
+            fake = fake[:, 0:3, :, :]
 
             self.save_images(fake, "fake", cur_iter)
+            self.save_images(fake_parsing, "fake_parsing", cur_iter, is_label=True)
             model.train()
             if not self.opt.no_EMA:
                 model.eval()
@@ -344,6 +348,25 @@ def labelcolormap(N):
             [247, 252, 12],
             [200, 100, 200],
             [100, 200, 200]
+        ], dtype=np.uint8)
+
+    elif N == 17:
+        cmap = np.array([  # 15
+            [254, 85, 0],  # top
+            [0, 0, 85],  # one piece
+            [0, 85, 85],  # pants
+            [0, 128, 0],  # skirt
+            [0, 119, 220],  # jacket
+            [254, 169, 0],  # left foot
+            [254, 254, 0],  # right foot
+            [0, 0, 0],  # background
+            [254, 0, 0],  # hair
+            [0, 0, 254],  # face
+            [0, 254, 254],  # right arm
+            [51, 169, 220],  # left arm
+            [85, 51, 0],  # torso
+            [169, 254, 85],  # right leg
+            [85, 254, 169],  # left leg
         ], dtype=np.uint8)
 
     else:

@@ -77,6 +77,8 @@ class OASIS_model(nn.Module):
 
                 # fake now has 19 channels
                 fake = self.netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic, human_parsing=human_parsing)
+                full_fake = fake
+                fake = fake[:, 0:3, :, :]
                 # from PIL import Image
                 # import numpy as np
 
@@ -171,6 +173,11 @@ class OASIS_model(nn.Module):
                     loss_G += loss_G_lpips
                 else:
                     loss_G_lpips = None
+
+
+                loss_G_parsing = self.L1_loss(full_fake[:, 3: , :, :], human_parsing)
+                loss_G += loss_G_parsing
+
                 
                 return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD, loss_G_adv_PD, loss_G_vgg, loss_G_l1, loss_G_lpips]
 
