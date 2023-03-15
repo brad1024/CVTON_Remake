@@ -364,7 +364,7 @@ class VitonHDDataset(Dataset):
         else:
             agnostic = ""
 
-        human_parse = cv2.imread(os.path.join(self.db_path, "data", "image-parse-v3", df_row["poseA"]).replace(".jpg", ".png"))
+        human_parse = cv2.imread(os.path.join(self.db_path, "train", "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
         human_parse = cv2.cvtColor(human_parse, cv2.COLOR_BGR2RGB)
         human_parse = cv2.resize(human_parse, self.opt.img_size[::-1], interpolation=cv2.INTER_NEAREST)
 
