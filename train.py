@@ -91,7 +91,7 @@ if __name__ == '__main__':
                 image = models.generate_swapped_batch(image)
 
             model.module.netG.zero_grad()
-            loss_G, losses_G_list = model(image, label, "losses_G", losses_computer, label_centroids=label_centroid, agnostic=agnostic)
+            loss_G, losses_G_list = model(image, label, "losses_G", losses_computer, label_centroids=label_centroid, agnostic=agnostic, human_parsing=human_parsing)
             loss_G, losses_G_list = loss_G.mean(), [loss.mean() if loss is not None else None for loss in losses_G_list]
 
             scaler.scale(loss_G).backward()
@@ -100,7 +100,7 @@ if __name__ == '__main__':
             if opt.add_d_loss:
                 #--- discriminator update ---#
                 model.module.netD.zero_grad()
-                loss_D, losses_D_list = model(image, label, "losses_D", losses_computer, agnostic=agnostic)
+                loss_D, losses_D_list = model(image, label, "losses_D", losses_computer, agnostic=agnostic, human_parsing=human_parsing)
                 loss_D, losses_D_list = loss_D.mean(), [loss.mean() if loss is not None else None for loss in losses_D_list]
 
                 scaler.scale(loss_D).backward()
@@ -111,7 +111,7 @@ if __name__ == '__main__':
             if opt.add_cd_loss:
                 #--- conditional discriminator update ---#
                 model.module.netCD.zero_grad()
-                loss_CD, losses_CD_list = model(image, label, "losses_CD", losses_computer, agnostic=agnostic)
+                loss_CD, losses_CD_list = model(image, label, "losses_CD", losses_computer, agnostic=agnostic, human_parsing=human_parsing)
                 loss_CD, losses_CD_list = loss_CD.mean(), [loss.mean() if loss is not None else None for loss in losses_CD_list]
 
                 scaler.scale(loss_CD).backward()
@@ -122,7 +122,7 @@ if __name__ == '__main__':
             if opt.add_pd_loss:
                 #--- patch discriminator update ---#
                 model.module.netPD.zero_grad()
-                loss_PD, losses_PD_list = model(image, label, "losses_PD", losses_computer, label_centroids=label_centroid, agnostic=agnostic)
+                loss_PD, losses_PD_list = model(image, label, "losses_PD", losses_computer, label_centroids=label_centroid, agnostic=agnostic, human_parsing=human_parsing)
                 loss_PD, losses_PD_list = loss_PD.mean(), [loss.mean() if loss is not None else None for loss in losses_PD_list]
 
                 scaler.scale(loss_PD).backward()
