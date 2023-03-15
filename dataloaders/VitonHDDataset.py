@@ -371,7 +371,8 @@ class VitonHDDataset(Dataset):
         human_parse_transf = np.zeros(self.opt.img_size)
         for i, color in enumerate(vitonHD_parse_labels):
             human_parse_transf[np.all(human_parse == color, axis=-1)] = i
-
+        human_parse_transf = np.expand_dims(human_parse_transf, 0)
+        human_parse_transf = torch.tensor(human_parse_transf)
 
         return {"image": {"I": image,
                           "C_t": cloth_image,
