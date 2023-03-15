@@ -246,6 +246,8 @@ class image_saver():
                 model.eval()
                 fake = model.module.netEMA(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"],
                                            label["densepose_seg"], agnostic=agnostic)
+                fake_parsing = fake[:, 3:, :, :]
+                fake = fake[:, 0:3, :, :]
                 self.save_images(fake, "fake_ema", cur_iter)
                 model.train()
 
