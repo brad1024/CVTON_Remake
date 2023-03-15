@@ -54,7 +54,7 @@ class OASIS_model(nn.Module):
         self.load_checkpoints()
         if opt.transform_cloth:
             bpgm_load(self.netG.bpgm, "./bpgm/checkpoints/bpgm_final_%s.pth" % (opt.bpgm_id))
-        
+
         #--- perceptual loss ---#
         if opt.phase in {"train", "train_whole"}:
             if opt.add_vgg_loss:
@@ -151,7 +151,8 @@ class OASIS_model(nn.Module):
                 
                 if self.opt.add_vgg_loss or self.opt.add_lpips_loss or self.opt.add_l1_loss:
                     fake = self.netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic, human_parsing=human_parsing)
-                    
+                    full_fake = fake
+                    fake = fake[:, 0:3, :, :]
                     # DELET AFTER
                     # _fake = ((fake * 0.5 + 0.5).detach()[0].permute(1, 2, 0).cpu().numpy() * 255).astype(np.uint8)
                     # Image.fromarray(_fake).save(os.path.join("sample", "fake.png"))
@@ -174,9 +175,11 @@ class OASIS_model(nn.Module):
                 else:
                     loss_G_lpips = None
 
-
-                loss_G_parsing = self.L1_loss(full_fake[:, 3: , :, :], human_parsing)
-                loss_G += loss_G_parsing
+                if self.opt.add_l1_loss:
+                    loss_G_parsing = self.L1_loss(full_fake[:, 3: , :, :], human_parsing)
+                    loss_G += loss_G_parsing
+                else:
+                    loss_G_parsing = None
 
                 
                 return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD, loss_G_adv_PD, loss_G_vgg, loss_G_l1, loss_G_lpips]
@@ -193,7 +196,9 @@ class OASIS_model(nn.Module):
                     with torch.no_grad():
                         # fake = self.netG(image["I_m"], image["C_t_swap"], label["body_seg"], cloth_seg, label["densepose_seg"])
                         fake = self.netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic, human_parsing=human_parsing)
-                    
+                        full_fake = fake
+                        fake = fake[:, 0:3, :, :]
+
                     output_D_fake = self.netD(fake)
                     
                     if "body" in self.opt.segmentation:
@@ -258,6 +263,8 @@ class OASIS_model(nn.Module):
                 with torch.no_grad():
                     # fake = self.netG(image["I_m"], image["C_t_swap"], label["body_seg"], cloth_seg, label["densepose_seg"])
                     fake = self.netG(image["I_m"], image["C_t"], label["body_seg"], cloth_seg, label["densepose_seg"], agnostic=agnostic)
+                    full_fake = fake
+                    fake = fake[:, 0:3, :, :]
 
                 # output_CD_fake = self.netCD(fake, image["C_t_swap"])
                 output_CD_fake = self.netCD(fake, image["C_t"])
@@ -283,7 +290,10 @@ class OASIS_model(nn.Module):
                 with torch.no_grad():
                     # fake = self.netG(image["I_m"], image["C_t_swap"], label["body_seg"], cloth_seg, label["densepose_seg"])
                     fake = self.netG(image["I_m"], image["C_t"], label["body_seg"], cloth_seg, label["densepose_seg"], agnostic=agnostic)
-                    
+                    full_fake = fake
+                    fake = fake[:, 0:3, :, :]
+
+
                 fake = generate_patches(self.opt, fake, label_centroids)
                 output_PD_fake = self.netPD(fake)
                 loss_PD_fake = losses_computer.loss_adv(output_PD_fake, for_real=False)
@@ -302,8 +312,12 @@ class OASIS_model(nn.Module):
                 with torch.no_grad():
                     if self.opt.no_EMA:
                         fake = self.netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic, human_parsing=human_parsing)
+                        full_fake = fake
+                        fake = fake[:, 0:3, :, :]
                     else:
                         fake = self.netEMA(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic, human_parsing=human_parsing)
+                        full_fake = fake
+                        fake = fake[:, 0:3, :, :]
                 return fake
             
             else:
