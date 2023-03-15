@@ -230,7 +230,7 @@ class image_saver():
         # print('--dense---------------00000----------')
         # time.sleep(30)
         self.save_images(image['I'], "real", cur_iter)
-        self.save_images(human_parsing, "real_parsing", cur_iter)
+        self.save_images(human_parsing, "real_parsing", cur_iter, is_label=True)
 
         with torch.no_grad():
             model.eval()
