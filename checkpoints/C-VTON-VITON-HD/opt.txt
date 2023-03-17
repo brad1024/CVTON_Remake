@@ -13,7 +13,7 @@
                channels_G: 32                            
           checkpoints_dir: ./checkpoints                 
            continue_train: False                         
-                 dataroot: .\data\vitonHD                	[default: ./data/vitonHD]
+                 dataroot: C:\Users\harry\CVTON_data\data\vitonHD	[default: ./data/vitonHD]
                   dataset: vitonHD                       	[default: mpv]
                  freq_fid: 5000                          
                freq_print: 1000                          
@@ -22,7 +22,7 @@
            freq_save_loss: 2000                          
          freq_smooth_loss: 250                           
                   gpu_ids: [0]                           
-                 img_size: 512                           	[default: 256]
+                 img_size: 64                            	[default: 256]
                 lambda_l1: 1.0                           
           lambda_labelmix: 10.0                          
              lambda_lpips: 1.0                           
@@ -38,9 +38,9 @@
                    no_seg: False                         
          no_spectral_norm: False                         
                num_epochs: 100                           
-           num_res_blocks: 7                             
+           num_res_blocks: 4                             
           param_free_norm: batch                         
-               patch_size: 128                           
+               patch_size: 16                            
                     phase: train                         
                      seed: 42                            
               seg_edit_id: 256                           

@@ -1,18 +1,19 @@
 python train.py \
 -n C-VTON-VITON-HD \
+--dataroot C:\Users\harry\CVTON_data\data\vitonHD \
 --dataset vitonHD \
---batch_size 16 \
+--batch_size 2 \
 --add_vgg_loss \
 --lambda_vgg 10 \
 --add_d_loss \
 --add_cd_loss \
 --add_pd_loss \
 --no_labelmix \
---img_size 512 \
+--img_size 64 \
 --segmentation densepose \
 --transform_cloth \
 --bpgm_id 256_26_3_viton \
 --gpu_ids 0
 
 
-python train.py -n C-VTON-VITON-HD --dataroot .\data\vitonHD --dataset vitonHD --batch_size 16 --add_vgg_loss --lambda_vgg 10 --add_d_loss --add_cd_loss --add_pd_loss --no_labelmix --img_size 512 --segmentation densepose --transform_cloth --bpgm_id 256_26_3_viton --gpu_ids 0
+#python train.py -n C-VTON-VITON-HD --dataroot C:\Users\harry\CVTON_data\data\vitonHD --dataset vitonHD --batch_size 2 --add_vgg_loss --lambda_vgg 10 --add_d_loss --add_cd_loss --add_pd_loss --no_labelmix --img_size 64 --segmentation densepose --transform_cloth --bpgm_id 256_26_3_viton --gpu_ids 0
