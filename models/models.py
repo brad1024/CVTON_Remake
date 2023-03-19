@@ -64,6 +64,8 @@ class OASIS_model(nn.Module):
             if opt.add_lpips_loss:
                 self.LPIPS_loss = lpips.LPIPS(net="vgg", verbose=False)
 
+            self.entropy_loss = losses.CrossEntropyLoss()
+
     def forward(self, image, label, mode, losses_computer, label_centroids=None, agnostic=None, human_parsing=None):
         # Branching is applied to be compatible with DataParallel
         with autocast():
@@ -124,7 +126,9 @@ class OASIS_model(nn.Module):
                         loss_G_adv_D_densepose = None
                 else:
                     loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose = None, None, None
-                
+
+
+
                 if self.opt.add_cd_loss:
                     # output_CD = self.netCD(fake, image["C_t_swap"])
                     output_CD = self.netCD(fake, image["C_t"])
@@ -175,11 +179,9 @@ class OASIS_model(nn.Module):
                 else:
                     loss_G_lpips = None
 
-                if self.opt.add_l1_loss:
-                    loss_G_parsing = self.L1_loss(full_fake[:, 3: , :, :], human_parsing)
-                    loss_G += loss_G_parsing
-                else:
-                    loss_G_parsing = None
+
+                loss_G_parsing = self.entropy_loss(full_fake[:, 3: , :, :], human_parsing)
+                loss_G += loss_G_parsing
 
                 
                 return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD, loss_G_adv_PD, loss_G_vgg, loss_G_l1, loss_G_lpips]
@@ -249,6 +251,8 @@ class OASIS_model(nn.Module):
                         loss_D += loss_D_lm
                     else:
                         loss_D_lm = None
+
+
                     
                 return loss_D, [loss_D_fake_body, loss_D_fake_cloth, loss_D_fake_densepose, loss_D_real_body, loss_D_real_cloth, loss_D_real_densepose, loss_D_lm]
 
