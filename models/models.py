@@ -15,7 +15,7 @@ import models.discriminator as discriminators
 import models.generator as generators
 import models.losses as losses
 from models.sync_batchnorm import DataParallelWithCallback
-
+import numpy as np
 
 class OASIS_model(nn.Module):
     
@@ -63,6 +63,8 @@ class OASIS_model(nn.Module):
                 self.L1_loss = nn.L1Loss()
             if opt.add_lpips_loss:
                 self.LPIPS_loss = lpips.LPIPS(net="vgg", verbose=False)
+            if opt.add_l2_loss:
+                self.L2_loss = nn.MSELoss()
 
     def forward(self, image, label, mode, losses_computer, label_centroids=None, agnostic=None, human_parsing=None):
         # Branching is applied to be compatible with DataParallel
@@ -158,28 +160,45 @@ class OASIS_model(nn.Module):
                     # Image.fromarray(_fake).save(os.path.join("sample", "fake.png"))
                     
                 if self.opt.add_vgg_loss:
+                    rgb_parsing_real = Parsing2rgb
+                    rgb_parsing_fake = full_fake[:, 3:, :, :]
+                    for p in range(0, 2):
+                        rgb_parsing_real[p] = Parsing2rgb(human_parsing[p])
+                        rgb_parsing_fake[p] = Parsing2rgb(full_fake[:, 3:, :, :][p])
+                    print(fake.size())
+                    print(rgb_parsing_fake.size())
+
                     loss_G_vgg = self.opt.lambda_vgg * self.VGG_loss(fake, image['I'])
                     loss_G += loss_G_vgg
+
+
+                    loss_G_vgg_parsing = self.opt.lambda_vgg * self.VGG_loss(rgb_parsing_fake, rgb_parsing_real)
+                    loss_G += loss_G_vgg_parsing
                 else:
                     loss_G_vgg = None
                     
                 if self.opt.add_l1_loss:
-                    loss_G_l1 = self.opt.lambda_l1 * self.L1_loss(fake, image['I'])    
+                    loss_G_l1 = self.opt.lambda_l1 * self.L1_loss(fake, image['I'])
+                    loss_G_l1_parsing = self.opt.lambda_l1 * self.L1_loss(full_fake[:, 3: , :, :], human_parsing)
                     loss_G += loss_G_l1
+                    loss_G += loss_G_l1_parsing
                 else:
                     loss_G_l1 = None
+                    loss_G_l1_parsing = None
                 
                 if self.opt.add_lpips_loss:
                     loss_G_lpips = self.opt.lambda_lpips * self.LPIPS_loss(fake, image['I']).mean()
+                    loss_G_lpips_parsing = self.opt.lambda_lpips * self.LPIPS_loss(full_fake[:, 3: , :, :], human_parsing).mean()
                     loss_G += loss_G_lpips
+                    loss_G += loss_G_lpips_parsing
                 else:
                     loss_G_lpips = None
-
-                if self.opt.add_l1_loss:
-                    loss_G_parsing = self.L1_loss(full_fake[:, 3: , :, :], human_parsing)
-                    loss_G += loss_G_parsing
+                    loss_G_lpips_parsing = None
+                if self.opt.add_l2_loss:
+                    loss_G_l2 = self.L2_loss(full_fake[:, 3: , :, :], human_parsing)
+                    loss_G += loss_G_l2
                 else:
-                    loss_G_parsing = None
+                    loss_G_l2 = None
 
                 
                 return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD, loss_G_adv_PD, loss_G_vgg, loss_G_l1, loss_G_lpips]
@@ -500,3 +519,32 @@ def generate_patches(opt, images, label_centroids):
 def generate_swapped_batch(image):
     image["C_t"] = image["C_t"].flip(0)
     return image
+
+def Parsing2rgb(parsing):
+    cmap = np.array([  # 15
+        [254, 85, 0],  # top
+        [0, 0, 85],  # one piece
+        [0, 85, 85],  # pants
+        [0, 128, 0],  # skirt
+        [0, 119, 220],  # jacket
+        [254, 169, 0],  # left foot
+        [254, 254, 0],  # right foot
+        [0, 0, 0],  # background
+        [254, 0, 0],  # hair
+        [0, 0, 254],  # face
+        [0, 254, 254],  # right arm
+        [51, 169, 220],  # left arm
+        [85, 51, 0],  # torso
+        [169, 254, 85],  # right leg
+        [85, 254, 169],  # left leg
+    ], dtype=np.uint8)
+    cmap = torch.from_numpy(cmap[:17])
+    size = parsing.size()
+    color_image = torch.ByteTensor(3, size[1], size[2]).fill_(0)
+    parsing = torch.argmax(parsing, dim=0, keepdim=True)
+    for label in range(0, len(cmap)):
+        mask = (label == parsing[0]).cpu()
+        color_image[0][mask] = cmap[label][0]
+        color_image[1][mask] = cmap[label][1]
+        color_image[2][mask] = cmap[label][2]
+    return color_image
