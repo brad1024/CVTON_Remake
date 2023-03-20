@@ -8,8 +8,9 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
+import time
 
-semantic_cloth_labels = [
+semantic_cloth_labels = [  # 20
     [128, 0, 128],
     [128, 128, 64],
     [128, 128, 192],
@@ -34,7 +35,7 @@ semantic_cloth_labels = [
     [0, 128, 192]
 ]
 
-semantic_densepose_labels = [
+semantic_densepose_labels = [  # 25
     [0, 0, 0],
     [105, 105, 105],
     [85, 107, 47],
@@ -62,7 +63,7 @@ semantic_densepose_labels = [
     [127, 255, 212]
 ]
 
-semantic_body_labels = [
+semantic_body_labels = [  # 15
     [127, 127, 127],
     [0, 255, 255],
     [255, 255, 0],
@@ -79,51 +80,81 @@ semantic_body_labels = [
     [255, 0, 0],
     [255, 0, 255]
 ]
-vitonHD_densepose_labels = [
+vitonHD_densepose_labels = [  # 25 -/->20
+    [0, 0, 0],
+    [20, 80, 194],
+    [20, 80, 194],
+    [9, 109, 221],
+    [4, 98, 224],
+    [12, 123, 215],
+    [20, 133, 213],
+    [3, 167, 195],
+    [26, 174, 188],
+    [6, 166, 198],
+    [22, 174, 184],
+    [120, 189, 135],
+    [86, 187, 143],
+    [115, 189, 128],
+    [88, 186, 145],
+    [145, 191, 116],
+    [170, 190, 103],
+    [191, 188, 111],
+    [216, 189, 86],
+    [252, 207, 46],
+    [250, 220, 34],
+    [254, 206, 46],
+    [240, 191, 52],
+    [251, 235, 25],
+    [247, 252, 12]
+]
+"""
+new_densepose = [
+    [0, 0, 0],
+    [37, 60, 162],
+    [20, 80, 194],
+    [9, 109, 221],
+    [4, 98, 224],
+    [12, 123, 215],
+    [20, 133, 213],
+    [3, 167, 195],
+    [26, 174, 188],
+    [6, 166, 198],
+    [22, 174, 184],
+    [120, 189, 135],
+    [86, 187, 143],
+    [115, 189, 128],
+    [88, 186, 145],
+    [145, 191, 116],
+    [170, 190, 105],
+    [193, 188, 97],
+    [216, 189, 86],
+    [228, 191, 74],
+    [241, 198, 60],
+    [252, 207, 46],
+    [250, 219, 40],
     [251, 235, 25],
     [248, 251, 14],
-    [215, 186, 85],
-    [170, 190, 105],
-    [247, 221, 38],
-    [240, 198, 60],
-    [145, 191, 74],
-    [252, 207, 46],
-    [4, 98, 224],
-    [8, 110, 221],
-    [20, 80, 194],
-    [6, 166, 198],
-    [22, 173, 184],
-    [11, 156, 203],
-    [15, 14, 209],
-    [38, 179, 171],
-    [55, 185, 159],
-    [20, 133, 213],
-    [10, 120, 217],
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0]
+]
+"""
+
+vitonHD_parse_labels = [  # 15
+    [254, 85, 0],  # top
+    [0, 0, 85],  # one piece
+    [0, 85, 85],  # pants
+    [0, 128, 0],  # skirt
+    [0, 119, 220],  # jacket
+    [254, 169, 0],  # left foot
+    [254, 254, 0],  # right foot
+    [0, 0, 0],  # background
+    [254, 0, 0],  # hair
+    [0, 0, 254],  # face
+    [0, 254, 254],  # right arm
+    [51, 169, 220],  # left arm
+    [85, 51, 0],  # torso
+    [169, 254, 85],  # right leg
+    [85, 254, 169],  # left leg
 ]
 
-vitonHD_parse_labels = [
-    [254, 0, 0],# hair
-    [0, 0, 254],# face
-    [85, 51, 0],# torso
-    [254, 85, 0],# top
-    [0, 0, 85],# one piece
-    [0, 85, 85],# pants
-    [0, 128, 0],# skirt
-    [0, 254, 254],# right arm
-    [51, 169, 220],# left arm
-    [169, 254, 85],# right leg
-    [85, 254, 169],# left leg
-    [0, 0, 0],# background
-    [0, 119, 220],# jacket
-    [254, 169, 0],# left foot
-    [254, 254, 0],# right foot
-]
 
 class VitonHDDataset(Dataset):
 
@@ -226,7 +257,7 @@ class VitonHDDataset(Dataset):
             # additionally, get body segmentation centroids.
             if self.phase == "train" and self.opt.add_pd_loss and (
                     self.body_label_centroids[index] is None or len(self.body_label_centroids[index]) != len(
-                    self.hand_indices)) and i in self.hand_indices:
+                self.hand_indices)) and i in self.hand_indices:
                 if self.body_label_centroids[index] is None:
                     self.body_label_centroids[index] = []
 
@@ -251,12 +282,25 @@ class VitonHDDataset(Dataset):
         densepose_seg = cv2.imread(
             os.path.join(self.db_path, "train", "image-densepose", df_row["poseA"]))
         densepose_seg = cv2.cvtColor(densepose_seg, cv2.COLOR_BGR2RGB)
-        densepose_seg = cv2.resize(densepose_seg, self.opt.img_size[::-1], interpolation=cv2.INTER_NEAREST)
-
+        densepose_seg = cv2.resize(densepose_seg, self.opt.img_size[::-1],
+                                   interpolation=cv2.INTER_NEAREST)  # INTER_LINEAR
+        # print('img_size')
+        # print(str(self.opt.img_size[::-1]))
+        # time.sleep(10)
         densepose_seg_transf = np.zeros(self.opt.img_size)
+        # for i, color in enumerate(vitonHD_densepose_labels):
+        #    densepose_seg_transf[np.all(densepose_seg == color, axis=-1)] = i
         for i, color in enumerate(vitonHD_densepose_labels):
-            densepose_seg_transf[np.all(densepose_seg == color, axis=-1)] = i
-
+            for j, row in enumerate(densepose_seg):
+                for k, pixel in enumerate(row):
+                    #print(densepose_seg.shape)
+                    #print('pixel')
+                    #print(pixel.shape)
+                    #print('color')
+                    #print(color)
+                    if abs(pixel[0] - color[0]) < 10 and abs(pixel[1] - color[1]) < 10 and abs(
+                            pixel[2] - color[2]) < 10:
+                        densepose_seg_transf[j][k] = i
         densepose_seg_transf = np.expand_dims(densepose_seg_transf, 0)
         densepose_seg_transf = torch.tensor(densepose_seg_transf)
 
@@ -275,6 +319,7 @@ class VitonHDDataset(Dataset):
                 try:
                     pose_label = json.load(f)
                     pose_data = pose_label['people'][0]['pose_keypoints_2d']
+                    # pose_data = pose_label['people']['pose_keypoints_2d']
                     pose_data = np.array(pose_data)
                     pose_data = pose_data.reshape((-1, 3))
 
@@ -319,6 +364,16 @@ class VitonHDDataset(Dataset):
         else:
             agnostic = ""
 
+        human_parse = cv2.imread(os.path.join(self.db_path, "train", "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
+        human_parse = cv2.cvtColor(human_parse, cv2.COLOR_BGR2RGB)
+        human_parse = cv2.resize(human_parse, self.opt.img_size[::-1], interpolation=cv2.INTER_NEAREST)
+
+        human_parse_transf = np.zeros(self.opt.img_size)
+        for i, color in enumerate(vitonHD_parse_labels):
+            human_parse_transf[np.all(human_parse == color, axis=-1)] = i
+        human_parse_transf = np.expand_dims(human_parse_transf, 0)
+        human_parse_transf = torch.tensor(human_parse_transf)
+
         return {"image": {"I": image,
                           "C_t": cloth_image,
                           "I_m": masked_image},
@@ -328,7 +383,8 @@ class VitonHDDataset(Dataset):
                 "name": df_row["poseA"],
                 "agnostic": agnostic,
                 "original_size": original_size,
-                "label_centroid": body_label_centroid}
+                "label_centroid": body_label_centroid,
+                "human_parsing": human_parse_transf}
 
     def __len__(self):
         return len(self.filepath_df)
