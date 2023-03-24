@@ -140,17 +140,17 @@ new_densepose = [
 vitonHD_parse_labels = [  # 15
     [254, 85, 0],  # top
     [0, 0, 85],  # one piece
-    [0, 85, 85],  # pants
-    [0, 128, 0],  # skirt
-    [0, 119, 220],  # jacket
-    [254, 169, 0],  # left foot
-    [254, 254, 0],  # right foot
-    [0, 0, 0],  # background
-    [254, 0, 0],  # hair
-    [0, 0, 254],  # face
+    [85, 51, 0],  # torso
     [0, 254, 254],  # right arm
     [51, 169, 220],  # left arm
-    [85, 51, 0],  # torso
+    [0, 119, 220],  # jacket
+    [0, 0, 0],  # background
+    [0, 85, 85],  # pants
+    [254, 0, 0],  # hair
+    [0, 128, 0],  # skirt
+    [254, 169, 0],  # left foot
+    [254, 254, 0],  # right foot
+    [0, 0, 254],  # face
     [169, 254, 85],  # right leg
     [85, 254, 169],  # left leg
 ]
