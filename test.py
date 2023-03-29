@@ -29,7 +29,7 @@ if opt.dataset == "mpv":
 elif opt.dataset == "viton":
     dataset_cl = VitonDataset
 elif opt.dataset == "vitonHD":
-    dataset_cl == VitonHDDataset
+    dataset_cl = VitonHDDataset
 else:
     raise NotImplementedError
 
