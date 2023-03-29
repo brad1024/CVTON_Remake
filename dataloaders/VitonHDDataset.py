@@ -178,6 +178,8 @@ class VitonHDDataset(Dataset):
         self.opt = opt
         self.phase = phase
         print(phase)
+        if phase == "test_same"
+            phase = "test"
         self.db_path = opt.dataroot
 
         test_pairs = "%s_pairs.txt" % (
@@ -186,6 +188,7 @@ class VitonHDDataset(Dataset):
         self.filepath_df = pd.read_csv(os.path.join(self.db_path, test_pairs), sep=" ", names=["poseA", "target"])
         # self.filepath_df.target = self.filepath_df.target.str.replace("_0", "_1")
         if phase == "test_same":
+            print(self.filepath_df)
             self.filepath_df.target = self.filepath_df.poseA.str
 
         if phase == "train":
