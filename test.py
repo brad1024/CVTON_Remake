@@ -64,6 +64,7 @@ if opt.phase == "test":
             image["I_m"] = image["I"]
         
         pred = model(image, label, "generate", None, agnostic=agnostic).detach().cpu().squeeze().permute(1, 2, 0).numpy()
+        print(pred.shape)
         pred = (pred + 1) / 2
         
         pred = (pred * 255).astype(np.uint8)
