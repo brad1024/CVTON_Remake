@@ -182,8 +182,7 @@ class VitonHDDataset(Dataset):
         if self.phase == "test_same":
             self.phase = "test"
         self.db_path = opt.dataroot
-        self.db_f = "test" if self.phase=="test" or self.phase=="val"
-        self.db_f = "train" if self.phase=="train"
+        self.db_f = "train" if self.phase=="train" else "test"
         test_pairs = "%s_pairs.txt" % (
             "test" if phase in {"test", "test_same"} else "train") if test_pairs is None else test_pairs
         # test_pairs = "/home/benjamin/StyleTON/data/viton/viton_train_swap.txt"
