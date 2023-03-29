@@ -350,6 +350,7 @@ class OASIS_model(nn.Module):
     def load_checkpoints(self):
         if self.opt.phase == "test" or self.opt.phase == "val":
             path = os.path.join(self.opt.checkpoints_dir, self.opt.name, "models", str(self.opt.which_iter) + "_")
+            print(f“checkpoint path {path}")
             if self.opt.no_EMA:
                 self.netG.load_state_dict(torch.load(path + "G.pth"), strict=False)
             else:
