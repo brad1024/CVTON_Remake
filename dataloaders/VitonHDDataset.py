@@ -177,6 +177,7 @@ class VitonHDDataset(Dataset):
 
         self.opt = opt
         self.phase = phase
+        print(phase)
         self.db_path = opt.dataroot
 
         test_pairs = "%s_pairs.txt" % (
