@@ -178,7 +178,7 @@ class VitonHDDataset(Dataset):
         self.opt = opt
         self.phase = phase
         print(phase)
-        if phase == "test_same"
+        if phase == "test_same":
             phase = "test"
         self.db_path = opt.dataroot
 
