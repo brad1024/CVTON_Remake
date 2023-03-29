@@ -177,11 +177,13 @@ class VitonHDDataset(Dataset):
 
         self.opt = opt
         self.phase = phase
+        
         print(phase)
-        if phase == "test_same":
-            phase = "test"
+        if self.phase == "test_same":
+            self.phase = "test"
         self.db_path = opt.dataroot
-
+        self.db_f = "test" if self.phase=="test" or self.phase=="val"
+        self.db_f = "train" if self.phase=="train"
         test_pairs = "%s_pairs.txt" % (
             "test" if phase in {"test", "test_same"} else "train") if test_pairs is None else test_pairs
         # test_pairs = "/home/benjamin/StyleTON/data/viton/viton_train_swap.txt"
@@ -211,7 +213,7 @@ class VitonHDDataset(Dataset):
     def __getitem__(self, index):
         df_row = self.filepath_df.iloc[index]
         # get original image of person
-        image = cv2.imread(os.path.join(self.db_path, self.phase, "image", df_row["poseA"]))
+        image = cv2.imread(os.path.join(self.db_path, self.db_f, "image", df_row["poseA"]))
         print(os.path.join(self.db_path, "train", "image", df_row["poseA"]))
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -220,12 +222,12 @@ class VitonHDDataset(Dataset):
         original_size = image.shape[:2]
 
         # extract non-warped cloth
-        cloth_image = cv2.imread(os.path.join(self.db_path, self.phase, "cloth", df_row["target"]))
+        cloth_image = cv2.imread(os.path.join(self.db_path, self.db_f, "cloth", df_row["target"]))
         cloth_image = cv2.cvtColor(cloth_image, cv2.COLOR_BGR2RGB)
 
         # load cloth labels
         cloth_seg = cv2.imread(
-            os.path.join(self.db_path, self.phase, "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
+            os.path.join(self.db_path, self.db_f, "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
         cloth_seg = cv2.cvtColor(cloth_seg, cv2.COLOR_BGR2RGB)
         cloth_seg = cv2.resize(cloth_seg, self.opt.img_size[::-1], interpolation=cv2.INTER_NEAREST)
 
@@ -255,7 +257,7 @@ class VitonHDDataset(Dataset):
         """
         # load and process the body labels
         body_seg = cv2.imread(
-            os.path.join(self.db_path, self.phase, "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
+            os.path.join(self.db_path, self.db_f, "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
         body_seg = cv2.cvtColor(body_seg, cv2.COLOR_BGR2RGB)
         body_seg = cv2.resize(body_seg, self.opt.img_size[::-1], interpolation=cv2.INTER_NEAREST)
 
@@ -290,7 +292,7 @@ class VitonHDDataset(Dataset):
         body_seg_transf = torch.tensor(body_seg_transf)
 
         densepose_seg = cv2.imread(
-            os.path.join(self.db_path, self.phase, "image-densepose", df_row["poseA"]))
+            os.path.join(self.db_path, self.db_f, "image-densepose", df_row["poseA"]))
         densepose_seg = cv2.cvtColor(densepose_seg, cv2.COLOR_BGR2RGB)
         densepose_seg = cv2.resize(densepose_seg, self.opt.img_size[::-1],
                                    interpolation=cv2.INTER_NEAREST)  # INTER_LINEAR
@@ -374,7 +376,7 @@ class VitonHDDataset(Dataset):
         else:
             agnostic = ""
 
-        human_parse = cv2.imread(os.path.join(self.db_path, self.phase, "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
+        human_parse = cv2.imread(os.path.join(self.db_path, self.db_f, "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
         human_parse = cv2.cvtColor(human_parse, cv2.COLOR_BGR2RGB)
         human_parse = cv2.resize(human_parse, self.opt.img_size[::-1], interpolation=cv2.INTER_NEAREST)
 
