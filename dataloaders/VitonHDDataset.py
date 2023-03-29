@@ -216,7 +216,7 @@ class VitonHDDataset(Dataset):
         original_size = image.shape[:2]
 
         # extract non-warped cloth
-        cloth_image = cv2.imread(os.path.join(self.db_path, "train", "cloth", df_row["poseA"]))
+        cloth_image = cv2.imread(os.path.join(self.db_path, "train", "cloth", df_row["target"]))
         cloth_image = cv2.cvtColor(cloth_image, cv2.COLOR_BGR2RGB)
 
         # load cloth labels
