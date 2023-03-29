@@ -186,7 +186,7 @@ class VitonHDDataset(Dataset):
         self.filepath_df = pd.read_csv(os.path.join(self.db_path, test_pairs), sep=" ", names=["poseA", "target"])
         # self.filepath_df.target = self.filepath_df.target.str.replace("_0", "_1")
         if phase == "test_same":
-            self.filepath_df.target = self.filepath_df.poseA.str.replace("_0", "_1")
+            self.filepath_df.target = self.filepath_df.poseA.str
 
         if phase == "train":
             self.filepath_df = self.filepath_df.iloc[:int(len(self.filepath_df) * opt.train_size)]
