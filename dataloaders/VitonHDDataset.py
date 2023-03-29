@@ -196,6 +196,8 @@ class VitonHDDataset(Dataset):
             self.filepath_df = self.filepath_df.iloc[:int(len(self.filepath_df) * opt.train_size)]
         elif phase == "val":
             self.filepath_df = self.filepath_df.iloc[-int(len(self.filepath_df) * opt.val_size):]
+        elif phase == "test":
+            self.filepath_df = self.filepath_df.iloc[:int(len(self.filepath_df) * opt.val_size)]
 
         self.transform = transforms.Compose([
             transforms.ToPILImage(),
