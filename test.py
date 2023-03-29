@@ -72,6 +72,8 @@ if opt.phase == "test":
             filename = data_i['name'][0].split("/")[-1].replace(".jpg", ".png")
         elif opt.dataset == "viton":
             filename = data_i['name'][0].split("/")[-1]
+        elif opt.dataset == "vitonHD":
+            filename = data_i['name'][0].split("/")[-1]
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename), pred)
     
     print()
