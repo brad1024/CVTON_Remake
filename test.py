@@ -12,6 +12,7 @@ import models.models as models
 import utils.utils as utils
 from dataloaders.MPVDataset import MPVDataset
 from dataloaders.VitonDataset import VitonDataset
+from dataloaders.VitonHDDataset import VitonHDDataset
 from utils.plotter import evaluate, plot_simple_reconstructions
 
 #--- read options ---#
@@ -27,6 +28,8 @@ if opt.dataset == "mpv":
     dataset_cl = MPVDataset
 elif opt.dataset == "viton":
     dataset_cl = VitonDataset
+elif opt.dataset == "vitonHD":
+    dataset_cl == VitonHDDataset
 else:
     raise NotImplementedError
 
