@@ -241,7 +241,7 @@ class VitonHDDataset(Dataset):
         for i, color in enumerate(vitonHD_parse_labels):
             cloth_seg_transf[np.all(cloth_seg == color, axis=-1)] = i
             if i < (
-                    6 + self.opt.no_bg):  # this works, because colors are sorted in a specific way with background being the 8th.
+                    6 + self.opt.no_bg) or i == 7 or i == 9:  # this works, because colors are sorted in a specific way with background being the 8th.
                 mask[np.all(cloth_seg == color, axis=-1)] = 1.0
 
         cloth_seg_transf = np.expand_dims(cloth_seg_transf, 0)
