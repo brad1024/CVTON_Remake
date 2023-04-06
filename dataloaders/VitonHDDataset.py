@@ -177,12 +177,12 @@ class VitonHDDataset(Dataset):
 
         self.opt = opt
         self.phase = phase
-        
+
         print(phase)
         if self.phase == "test_same":
             self.phase = "test"
         self.db_path = opt.dataroot
-        self.db_f = "train" if self.phase=="train" else "test"
+        self.db_f = "train" if self.phase == "train" or "val" else "test"
         test_pairs = "%s_pairs.txt" % (
             "test" if phase in {"test", "test_same"} else "train") if test_pairs is None else test_pairs
         # test_pairs = "/home/benjamin/StyleTON/data/viton/viton_train_swap.txt"
@@ -196,7 +196,7 @@ class VitonHDDataset(Dataset):
             self.filepath_df = self.filepath_df.iloc[:int(len(self.filepath_df) * opt.train_size)]
         elif phase == "val":
             self.filepath_df = self.filepath_df.iloc[-int(len(self.filepath_df) * opt.val_size):]
-        elif phase == "test" or phase=="test_same":
+        elif phase == "test" or phase == "test_same":
             self.filepath_df = self.filepath_df.iloc[:int(len(self.filepath_df) * opt.val_size)]
 
         self.transform = transforms.Compose([
@@ -306,11 +306,11 @@ class VitonHDDataset(Dataset):
         for i, color in enumerate(vitonHD_densepose_labels):
             for j, row in enumerate(densepose_seg):
                 for k, pixel in enumerate(row):
-                    #print(densepose_seg.shape)
-                    #print('pixel')
-                    #print(pixel.shape)
-                    #print('color')
-                    #print(color)
+                    # print(densepose_seg.shape)
+                    # print('pixel')
+                    # print(pixel.shape)
+                    # print('color')
+                    # print(color)
                     if abs(pixel[0] - color[0]) < 10 and abs(pixel[1] - color[1]) < 10 and abs(
                             pixel[2] - color[2]) < 10:
                         densepose_seg_transf[j][k] = i
@@ -377,7 +377,8 @@ class VitonHDDataset(Dataset):
         else:
             agnostic = ""
 
-        human_parse = cv2.imread(os.path.join(self.db_path, self.db_f, "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
+        human_parse = cv2.imread(
+            os.path.join(self.db_path, self.db_f, "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
         human_parse = cv2.cvtColor(human_parse, cv2.COLOR_BGR2RGB)
         human_parse = cv2.resize(human_parse, self.opt.img_size[::-1], interpolation=cv2.INTER_NEAREST)
 
