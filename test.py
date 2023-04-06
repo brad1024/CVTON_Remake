@@ -12,6 +12,7 @@ import models.models as models
 import utils.utils as utils
 from dataloaders.MPVDataset import MPVDataset
 from dataloaders.VitonDataset import VitonDataset
+from dataloaders.VitonHDDataset import VitonHDDataset
 from utils.plotter import evaluate, plot_simple_reconstructions
 
 #--- read options ---#
@@ -27,6 +28,8 @@ if opt.dataset == "mpv":
     dataset_cl = MPVDataset
 elif opt.dataset == "viton":
     dataset_cl = VitonDataset
+elif opt.dataset == "vitonHD":
+    dataset_cl = VitonHDDataset
 else:
     raise NotImplementedError
 
@@ -61,6 +64,7 @@ if opt.phase == "test":
             image["I_m"] = image["I"]
         
         pred = model(image, label, "generate", None, agnostic=agnostic).detach().cpu().squeeze().permute(1, 2, 0).numpy()
+        print(pred.shape)
         pred = (pred + 1) / 2
         
         pred = (pred * 255).astype(np.uint8)
@@ -71,6 +75,8 @@ if opt.phase == "test":
         if opt.dataset == "mpv":
             filename = data_i['name'][0].split("/")[-1].replace(".jpg", ".png")
         elif opt.dataset == "viton":
+            filename = data_i['name'][0].split("/")[-1]
+        elif opt.dataset == "vitonHD":
             filename = data_i['name'][0].split("/")[-1]
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename), pred)
     

@@ -69,8 +69,13 @@ def add_all_arguments(parser, train):
     parser.add_argument("--no_bg", action='store_true', default=False, help="whether to remove the background in I_m")
 
     if train:
+<<<<<<< HEAD
         parser.add_argument('--freq_print', type=int, default=1000, help='frequency of showing training results')
         parser.add_argument('--freq_save_ckpt', type=int, default=1000, help='frequency of saving the checkpoints')
+=======
+        parser.add_argument('--freq_print', type=int, default=100, help='frequency of showing training results')
+        parser.add_argument('--freq_save_ckpt', type=int, default=2000, help='frequency of saving the checkpoints')
+>>>>>>> 9c4713a29bc813edc2bd14a8aa78d09745cc0db2
         parser.add_argument('--freq_save_latest', type=int, default=1000, help='frequency of saving the latest model')
         parser.add_argument('--freq_smooth_loss', type=int, default=250, help='smoothing window for loss visualization')
         parser.add_argument('--freq_save_loss', type=int, default=2000, help='frequency of loss plot updates')
@@ -88,6 +93,9 @@ def add_all_arguments(parser, train):
         parser.add_argument('--add_lpips_loss', action='store_true', help='if specified, add LPIPS feature matching loss')
         parser.add_argument('--lambda_lpips', type=float, default=1.0, help='weight for LPIPS loss')
         parser.add_argument('--add_l1_loss', action='store_true', help='if specified, add L1 loss')
+        parser.add_argument('--add_l2_loss', action='store_true', help='if specified, add L2 loss')
+        parser.add_argument('--add_crossEntropy_loss', action='store_true', help='if specified, add cross entropy loss')
+        parser.add_argument('--add_parsing_loss', action='store_true', help='if specified, add parsing loss')
         parser.add_argument('--lambda_l1', type=float, default=1.0, help='weight for L1 loss')
         parser.add_argument('--add_d_loss', action="store_true", help="if specified, add segmentation discriminator loss")
         parser.add_argument('--add_cd_loss', action="store_true", help="if specified, add conditional discriminator loss")

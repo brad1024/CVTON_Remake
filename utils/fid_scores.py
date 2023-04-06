@@ -64,7 +64,8 @@ class fid_pytorch():
                     generated = netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic)
                 else:
                     generated = netEMA(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic)
-                        
+
+                generated = generated[:, 0:3, :, :]
                 generated = (generated + 1) / 2
                 pool_val = self.model_inc(generated.float())[0][:, :, 0, 0]
                 pool += [pool_val]

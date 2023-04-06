@@ -15,7 +15,7 @@ import models.discriminator as discriminators
 import models.generator as generators
 import models.losses as losses
 from models.sync_batchnorm import DataParallelWithCallback
-
+import numpy as np
 
 class OASIS_model(nn.Module):
     
@@ -63,6 +63,10 @@ class OASIS_model(nn.Module):
                 self.L1_loss = nn.L1Loss()
             if opt.add_lpips_loss:
                 self.LPIPS_loss = lpips.LPIPS(net="vgg", verbose=False)
+            if opt.add_l2_loss:
+                self.L2_loss = nn.MSELoss()
+
+            self.entropy_loss = losses.CrossEntropyLoss()
 
     def forward(self, image, label, mode, losses_computer, label_centroids=None, agnostic=None, human_parsing=None):
         # Branching is applied to be compatible with DataParallel
@@ -124,7 +128,9 @@ class OASIS_model(nn.Module):
                         loss_G_adv_D_densepose = None
                 else:
                     loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose = None, None, None
-                
+
+
+
                 if self.opt.add_cd_loss:
                     # output_CD = self.netCD(fake, image["C_t_swap"])
                     output_CD = self.netCD(fake, image["C_t"])
@@ -158,29 +164,45 @@ class OASIS_model(nn.Module):
                     # Image.fromarray(_fake).save(os.path.join("sample", "fake.png"))
                     
                 if self.opt.add_vgg_loss:
+
                     loss_G_vgg = self.opt.lambda_vgg * self.VGG_loss(fake, image['I'])
                     loss_G += loss_G_vgg
                 else:
                     loss_G_vgg = None
                     
                 if self.opt.add_l1_loss:
-                    loss_G_l1 = self.opt.lambda_l1 * self.L1_loss(fake, image['I'])    
+                    loss_G_l1 = self.opt.lambda_l1 * self.L1_loss(fake, image['I'])
+                    loss_G_l1_parsing = self.opt.lambda_l1 * self.L1_loss(full_fake[:, 3: , :, :], human_parsing)
                     loss_G += loss_G_l1
+                    loss_G += loss_G_l1_parsing
                 else:
                     loss_G_l1 = None
+                    loss_G_l1_parsing = None
                 
                 if self.opt.add_lpips_loss:
                     loss_G_lpips = self.opt.lambda_lpips * self.LPIPS_loss(fake, image['I']).mean()
+                    loss_G_lpips_parsing = self.opt.lambda_lpips * self.LPIPS_loss(full_fake[:, 3: , :, :], human_parsing).mean()
                     loss_G += loss_G_lpips
+                    loss_G += loss_G_lpips_parsing
                 else:
                     loss_G_lpips = None
-
-                if self.opt.add_l1_loss:
-                    loss_G_parsing = self.L1_loss(full_fake[:, 3: , :, :], human_parsing)
-                    loss_G += loss_G_parsing
+                    loss_G_lpips_parsing = None
+                if self.opt.add_l2_loss:
+                    loss_G_l2 = self.L2_loss(full_fake[:, 3: , :, :], human_parsing)
+                    loss_G += loss_G_l2
                 else:
-                    loss_G_parsing = None
+                    loss_G_l2 = None
 
+                if self.opt.add_crossEntropy_loss:
+                    parsing = torch.argmax(human_parsing, dim=1)
+                    fake_parsing = torch.argmax(full_fake[:, 3: , :, :], dim=1)
+                    loss_G_parsing = self.entropy_loss(full_fake[:, 3: , :, :], parsing)
+                    loss_G += loss_G_parsing
+                if self.opt.add_parsing_loss:
+                    real_parsing = torch.argmax(human_parsing, dim=1)
+                    fake_parsing = torch.argmax(full_fake[:, 3:, :, :], dim=1)
+
+                    losses.CalculateParsingLoss(real_parsing, fake_parsing)
                 
                 return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD, loss_G_adv_PD, loss_G_vgg, loss_G_l1, loss_G_lpips]
 
@@ -249,6 +271,8 @@ class OASIS_model(nn.Module):
                         loss_D += loss_D_lm
                     else:
                         loss_D_lm = None
+
+
                     
                 return loss_D, [loss_D_fake_body, loss_D_fake_cloth, loss_D_fake_densepose, loss_D_real_body, loss_D_real_cloth, loss_D_real_densepose, loss_D_lm]
 
@@ -326,6 +350,7 @@ class OASIS_model(nn.Module):
     def load_checkpoints(self):
         if self.opt.phase == "test" or self.opt.phase == "val":
             path = os.path.join(self.opt.checkpoints_dir, self.opt.name, "models", str(self.opt.which_iter) + "_")
+            print(f"checkpoint path {path}")
             if self.opt.no_EMA:
                 self.netG.load_state_dict(torch.load(path + "G.pth"), strict=False)
             else:
@@ -500,3 +525,32 @@ def generate_patches(opt, images, label_centroids):
 def generate_swapped_batch(image):
     image["C_t"] = image["C_t"].flip(0)
     return image
+
+def Parsing2rgb(parsing):
+    cmap = np.array([  # 15
+        [254, 85, 0],  # top
+        [0, 0, 85],  # one piece
+        [0, 85, 85],  # pants
+        [0, 128, 0],  # skirt
+        [0, 119, 220],  # jacket
+        [254, 169, 0],  # left foot
+        [254, 254, 0],  # right foot
+        [0, 0, 0],  # background
+        [254, 0, 0],  # hair
+        [0, 0, 254],  # face
+        [0, 254, 254],  # right arm
+        [51, 169, 220],  # left arm
+        [85, 51, 0],  # torso
+        [169, 254, 85],  # right leg
+        [85, 254, 169],  # left leg
+    ], dtype=np.uint8)
+    cmap = torch.from_numpy(cmap[:17])
+    size = parsing.size()
+    color_image = torch.ByteTensor(3, size[1], size[2]).fill_(0)
+    parsing = torch.argmax(parsing, dim=0, keepdim=True)
+    for label in range(0, len(cmap)):
+        mask = (label == parsing[0]).cpu()
+        color_image[0][mask] = cmap[label][0]
+        color_image[1][mask] = cmap[label][1]
+        color_image[2][mask] = cmap[label][2]
+    return color_image

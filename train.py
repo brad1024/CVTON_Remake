@@ -60,7 +60,6 @@ if __name__ == '__main__':
     start_epoch, start_iter = utils.get_start_iters(opt.loaded_latest_iter, len(dataloader))
     for epoch in range(start_epoch, opt.num_epochs):
         for i, data_i in enumerate(dataloader):
-            print(data_i)
             if not already_started and i < start_iter:
                 continue
 
