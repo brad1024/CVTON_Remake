@@ -217,7 +217,7 @@ class OASIS_model(nn.Module):
                     
                     with torch.no_grad():
                         # fake = self.netG(image["I_m"], image["C_t_swap"], label["body_seg"], cloth_seg, label["densepose_seg"])
-                        fake = self.netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic, human_parsing=human_parsing)
+                        fake = self.netG(image["I_m"], image["target_cloth"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic, human_parsing=human_parsing)
                         full_fake = fake
                         fake = fake[:, 0:3, :, :]
 
@@ -286,12 +286,12 @@ class OASIS_model(nn.Module):
                 
                 with torch.no_grad():
                     # fake = self.netG(image["I_m"], image["C_t_swap"], label["body_seg"], cloth_seg, label["densepose_seg"])
-                    fake = self.netG(image["I_m"], image["C_t"], label["body_seg"], cloth_seg, label["densepose_seg"], agnostic=agnostic)
+                    fake = self.netG(image["I_m"], image["target_cloth"], label["body_seg"], cloth_seg, label["densepose_seg"], agnostic=agnostic)
                     full_fake = fake
                     fake = fake[:, 0:3, :, :]
 
                 # output_CD_fake = self.netCD(fake, image["C_t_swap"])
-                output_CD_fake = self.netCD(fake, image["C_t"])
+                output_CD_fake = self.netCD(fake, image["target_cloth"])
                 loss_CD_fake = losses_computer.loss_adv(output_CD_fake, for_real=False)
                 loss_CD += loss_CD_fake
                 
@@ -313,7 +313,7 @@ class OASIS_model(nn.Module):
                 
                 with torch.no_grad():
                     # fake = self.netG(image["I_m"], image["C_t_swap"], label["body_seg"], cloth_seg, label["densepose_seg"])
-                    fake = self.netG(image["I_m"], image["C_t"], label["body_seg"], cloth_seg, label["densepose_seg"], agnostic=agnostic)
+                    fake = self.netG(image["I_m"], image["target_cloth"], label["body_seg"], cloth_seg, label["densepose_seg"], agnostic=agnostic)
                     full_fake = fake
                     fake = fake[:, 0:3, :, :]
 

@@ -226,6 +226,9 @@ class VitonHDDataset(Dataset):
         cloth_image = cv2.imread(os.path.join(self.db_path, self.db_f, "cloth", df_row["poseA"]))
         cloth_image = cv2.cvtColor(cloth_image, cv2.COLOR_BGR2RGB)
 
+        target_cloth = cv2.imread(os.path.join(self.db_path, self.db_f, "cloth", df_row["target"]))
+        target_cloth = cv2.cvtColor(target_cloth, cv2.COLOR_BGR2RGB)
+
         # load cloth labels
         cloth_seg = cv2.imread(
             os.path.join(self.db_path, self.db_f, "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
@@ -241,7 +244,7 @@ class VitonHDDataset(Dataset):
         for i, color in enumerate(vitonHD_parse_labels):
             cloth_seg_transf[np.all(cloth_seg == color, axis=-1)] = i
             if i < (
-                    6 + self.opt.no_bg) or i == 7 or i == 9:  # this works, because colors are sorted in a specific way with background being the 8th.
+                    6 + self.opt.no_bg):  # this works, because colors are sorted in a specific way with background being the 8th. # or i == 7 or i == 9
                 mask[np.all(cloth_seg == color, axis=-1)] = 1.0
 
         cloth_seg_transf = np.expand_dims(cloth_seg_transf, 0)
@@ -324,6 +327,8 @@ class VitonHDDataset(Dataset):
         masked_image = (masked_image - 0.5) / 0.5
         cloth_image = self.transform(cloth_image)
         cloth_image = (cloth_image - 0.5) / 0.5
+        target_cloth = self.transform(target_cloth)
+        target_cloth = (target_cloth - 0.5) / 0.5
 
         if self.opt.bpgm_id.find("old") >= 0:
             # load pose points
@@ -390,6 +395,7 @@ class VitonHDDataset(Dataset):
 
         return {"image": {"I": image,
                           "C_t": cloth_image,
+                          "target_cloth": target_cloth,
                           "I_m": masked_image},
                 "cloth_label": cloth_seg_transf,
                 "body_label": body_seg_transf,

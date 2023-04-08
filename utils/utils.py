@@ -231,15 +231,19 @@ class image_saver():
         # time.sleep(30)
         self.save_images(image['I'], "real", cur_iter)
         self.save_images(human_parsing, "real_parsing", cur_iter, is_label=True)
-
+        self.save_images(image['target_cloth'], "target_cloth", cur_iter)
         with torch.no_grad():
             model.eval()
             fake = model.module.netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"],
                                      label["densepose_seg"], agnostic=agnostic)
             fake_parsing = fake[:, 3:, :, :]
             fake = fake[:, 0:3, :, :]
+            fake_target = model.module.netG(image["I_m"], image["target_cloth"], label["body_seg"], label["cloth_seg"],
+                                     label["densepose_seg"], agnostic=agnostic)
+            fake_target = fake_target[:, 0:3, :, :]
             self.save_images(fake, "fake", cur_iter)
             self.save_images(fake_parsing, "fake_parsing", cur_iter, is_label=True)
+            self.save_images(fake_target, "fake_target", cur_iter)
             model.train()
             if not self.opt.no_EMA:
                 model.eval()
