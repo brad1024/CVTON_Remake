@@ -229,6 +229,14 @@ class VitonHDDataset(Dataset):
         target_cloth = cv2.imread(os.path.join(self.db_path, self.db_f, "cloth", df_row["target"]))
         target_cloth = cv2.cvtColor(target_cloth, cv2.COLOR_BGR2RGB)
 
+        # extract non-warped target cloth mask
+        target_cloth_mask = cv2.imread(os.path.join(self.db_path, self.db_f, "cloth-mask", df_row["target"]))
+        target_cloth_mask = cv2.cvtColor(target_cloth_mask, cv2.COLOR_BGR2RGB)
+
+        # extract non-warped original cloth mask
+        cloth_mask = cv2.imread(os.path.join(self.db_path, self.db_f, "cloth-mask", df_row["poseA"]))
+        cloth_mask = cv2.cvtColor(cloth_mask, cv2.COLOR_BGR2RGB)
+
         # load cloth labels
         cloth_seg = cv2.imread(
             os.path.join(self.db_path, self.db_f, "image-parse-v3", df_row["poseA"].replace(".jpg", ".png")))
@@ -396,7 +404,9 @@ class VitonHDDataset(Dataset):
         return {"image": {"I": image,
                           "C_t": cloth_image,
                           "target_cloth": target_cloth,
-                          "I_m": masked_image},
+                          "I_m": masked_image,
+                          "target_cloth_mask": target_cloth_mask,
+                          "cloth_mask": cloth_mask},
                 "cloth_label": cloth_seg_transf,
                 "body_label": body_seg_transf,
                 "densepose_label": densepose_seg_transf,

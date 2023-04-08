@@ -168,13 +168,14 @@ class OASIS_Simple(nn.Module):
         else:
             self.bpgm = None
         
-    def forward(self, I_m, C_t, body_seg, cloth_seg, densepose_seg, agnostic=None, human_parsing=None):
+    def forward(self, I_m, C_t, C_t_mask, body_seg, cloth_seg, densepose_seg, agnostic=None, human_parsing=None):
         if agnostic is not None:
             C_transformed = self.transform_cloth_old(agnostic, C_t)
         else:
             C_transformed = self.transform_cloth(densepose_seg, C_t)
+            C_mask_transformed = self.transform_cloth(densepose_seg, C_t_mask)
         
-        z = torch.cat((I_m, C_t, C_transformed), dim=1)
+        z = torch.cat((I_m, C_t, C_transformed, C_mask_transformed), dim=1)
         
         seg_dict = {
             "body": body_seg,
