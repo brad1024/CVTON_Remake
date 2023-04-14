@@ -212,7 +212,7 @@ class image_saver():
         self.path = os.path.join(opt.checkpoints_dir, opt.name, "images") + "/"
         self.opt = opt
         self.num_cl = {"body_seg": opt.semantic_nc[0] + 1, "cloth_seg": opt.semantic_nc[1] + 1,
-                       "densepose_seg": opt.semantic_nc[2] + 1, "fake_parsing": 17, "real_parsing": 17}
+                       "densepose_seg": opt.semantic_nc[2] + 1, "fake_original_parsing": 17, "real_parsing": 17, "fake_target_parsing" : 17}
 
         os.makedirs(self.path, exist_ok=True)
 
