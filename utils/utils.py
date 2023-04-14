@@ -148,9 +148,7 @@ def update_EMA(model, cur_iter, dataloader, opt, force_run_stats=False):
             for i, data_i in enumerate(dataloader):
                 image, label, human_parsing = models.preprocess_input(opt, data_i)
                 agnostic = data_i["agnostic"].cuda() if opt.bpgm_id.find("old") >= 0 else None
-                fake = model.module.netEMA(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"],
-                                           label["densepose_seg"], agnostic=agnostic)
-
+                fake, C_transform = model.module.netEMA(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic)
                 num_upd += 1
                 if num_upd > 50:
                     break
