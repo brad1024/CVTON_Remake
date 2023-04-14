@@ -249,7 +249,7 @@ class image_saver():
             model.train()
             if not self.opt.no_EMA:
                 model.eval()
-                fake = model.module.netEMA(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"], label["cloth_seg"],
+                fake, C_transform = model.module.netEMA(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"], label["cloth_seg"],
                                            label["densepose_seg"], agnostic=agnostic)
                 fake_parsing = fake[:, 3:, :, :]
                 fake = fake[:, 0:3, :, :]
