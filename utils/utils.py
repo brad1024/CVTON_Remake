@@ -148,7 +148,7 @@ def update_EMA(model, cur_iter, dataloader, opt, force_run_stats=False):
             for i, data_i in enumerate(dataloader):
                 image, label, human_parsing = models.preprocess_input(opt, data_i)
                 agnostic = data_i["agnostic"].cuda() if opt.bpgm_id.find("old") >= 0 else None
-                fake, C_transform = model.module.netEMA(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic)
+                fake, C_transform = model.module.netEMA(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic)
                 num_upd += 1
                 if num_upd > 50:
                     break
@@ -232,11 +232,11 @@ class image_saver():
         self.save_images(image['target_cloth'], "fake_target_cloth", cur_iter)
         with torch.no_grad():
             model.eval()
-            fake, C_transform = model.module.netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"],
+            fake, C_transform = model.module.netG(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"], label["cloth_seg"],
                                      label["densepose_seg"], agnostic=agnostic)
             fake_parsing = fake[:, 3:, :, :]
             fake = fake[:, 0:3, :, :]
-            fake_target, C_target_transform = model.module.netG(image["I_m"], image["target_cloth"], label["body_seg"], label["cloth_seg"],
+            fake_target, C_target_transform = model.module.netG(image["I_m"], image["target_cloth"], image["target_cloth_mask"], label["body_seg"], label["cloth_seg"],
                                             label["densepose_seg"], agnostic=agnostic)
             fake_target = fake_target[:, 0:3, :, :]
             fake_target_parsing = fake_target[:, 3:, :, :]
