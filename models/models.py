@@ -339,7 +339,7 @@ class OASIS_model(nn.Module):
                         full_fake = fake
                         fake = fake[:, 0:3, :, :]
                     else:
-                        fake = self.netEMA(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic, human_parsing=human_parsing)
+                        fake, C_transform = self.netEMA(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic, human_parsing=human_parsing)
                         full_fake = fake
                         fake = fake[:, 0:3, :, :]
                 return fake
