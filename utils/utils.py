@@ -238,8 +238,8 @@ class image_saver():
             fake = fake[:, 0:3, :, :]
             fake_target, C_target_transform = model.module.netG(image["I_m"], image["target_cloth"], image["target_cloth_mask"], label["body_seg"], label["cloth_seg"],
                                             label["densepose_seg"], agnostic=agnostic)
-            fake_target = fake_target[:, 0:3, :, :]
             fake_target_parsing = fake_target[:, 3:, :, :]
+            fake_target = fake_target[:, 0:3, :, :]
             self.save_images(fake, "fake_original", cur_iter)
             self.save_images(fake_parsing, "fake_original_parsing", cur_iter, is_label=True)
             self.save_images(C_transform, "fake_original_cloth_transform", cur_iter)
