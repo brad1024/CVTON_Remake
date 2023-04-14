@@ -523,7 +523,7 @@ def generate_patches(opt, images, label_centroids):
 
 
 def generate_swapped_batch(image):
-    image["C_t"] = image["C_t"].flip(0)
+    #image["C_t"] = image["C_t"].flip(0)
     return image
 
 def Parsing2rgb(parsing):

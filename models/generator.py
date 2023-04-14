@@ -197,7 +197,7 @@ class OASIS_Simple(nn.Module):
                 # grid, _ = self.bpgm(torch.cat((I_m, seg), dim=1), C_t)
                 if self.bpgm.resolution != self.opt.img_size:
                     _seg = F.interpolate(seg, size=self.bpgm.resolution, mode="nearest")
-                    _C_t = F.interpolate(C_t, size=self.bpgm.resolution, mode="bilinear", align_corners=False)
+                    _C_t = F.interpolate(C_t.float(), size=self.bpgm.resolution, mode="bilinear", align_corners=False)
                     grid = self.bpgm(_seg, _C_t).permute(0, 3, 1, 2)
 
                     grid = F.interpolate(grid, size=self.opt.img_size, mode="bilinear", align_corners=False)

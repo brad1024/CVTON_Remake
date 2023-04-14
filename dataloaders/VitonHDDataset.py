@@ -337,6 +337,10 @@ class VitonHDDataset(Dataset):
         cloth_image = (cloth_image - 0.5) / 0.5
         target_cloth = self.transform(target_cloth)
         target_cloth = (target_cloth - 0.5) / 0.5
+        target_cloth_mask = self.transform(target_cloth_mask)
+        target_cloth_mask = (target_cloth_mask - 0.5) / 0.5
+        cloth_mask = self.transform(cloth_mask)
+        cloth_mask = (cloth_mask - 0.5) / 0.5
 
         if self.opt.bpgm_id.find("old") >= 0:
             # load pose points
