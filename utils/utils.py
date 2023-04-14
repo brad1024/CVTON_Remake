@@ -231,19 +231,23 @@ class image_saver():
         # time.sleep(30)
         self.save_images(image['I'], "real", cur_iter)
         self.save_images(human_parsing, "real_parsing", cur_iter, is_label=True)
-        self.save_images(image['target_cloth'], "target_cloth", cur_iter)
+        self.save_images(image['target_cloth'], "fake_target_cloth", cur_iter)
         with torch.no_grad():
             model.eval()
-            fake = model.module.netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"],
+            fake, C_transform = model.module.netG(image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"],
                                      label["densepose_seg"], agnostic=agnostic)
             fake_parsing = fake[:, 3:, :, :]
             fake = fake[:, 0:3, :, :]
-            fake_target = model.module.netG(image["I_m"], image["target_cloth"], label["body_seg"], label["cloth_seg"],
-                                     label["densepose_seg"], agnostic=agnostic)
+            fake_target, C_target_transform = model.module.netG(image["I_m"], image["target_cloth"], label["body_seg"], label["cloth_seg"],
+                                            label["densepose_seg"], agnostic=agnostic)
             fake_target = fake_target[:, 0:3, :, :]
-            self.save_images(fake, "fake", cur_iter)
-            self.save_images(fake_parsing, "fake_parsing", cur_iter, is_label=True)
+            fake_target_parsing = fake_target[:, 3:, :, :]
+            self.save_images(fake, "fake_original", cur_iter)
+            self.save_images(fake_parsing, "fake_original_parsing", cur_iter, is_label=True)
+            self.save_images(C_transform, "fake_original_cloth_transform", cur_iter)
             self.save_images(fake_target, "fake_target", cur_iter)
+            self.save_images(fake_target_parsing, "fake_target_parsing", cur_iter, is_label=True)
+            self.save_images(C_target_transform, "fake_target_cloth_transform", cur_iter)
             model.train()
             if not self.opt.no_EMA:
                 model.eval()
@@ -389,4 +393,3 @@ def labelcolormap(N):
             cmap[i, 1] = g
             cmap[i, 2] = b
     return cmap
-

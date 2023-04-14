@@ -189,7 +189,7 @@ class OASIS_Simple(nn.Module):
             seg = torch.cat([seg_dict[mode] for mode in sorted(seg_dict.keys()) if mode in self.opt.segmentation], axis=1)
             
         x = self.oasis(seg, z, human_parsing=human_parsing)
-        return x
+        return x, C_transformed
     
     def transform_cloth(self, seg, C_t):
         if self.bpgm is not None:
