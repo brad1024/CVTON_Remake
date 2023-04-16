@@ -220,9 +220,9 @@ class OASIS_model(nn.Module):
                 if self.opt.add_shape_loss:
                     fake_target_parsing = torch.argmax(fake_target[:, 3:, :, :], dim=1)
                     fake_arg_015 = torch.argmax(fake_target[:, [3, 4, 5], :, :], dim=1)
-                    fake_target_upper = torch.eq(fake_target_parsing, fake_arg_015).cuda()
+                    fake_target_upper = torch.eq(fake_target_parsing, fake_arg_015).cuda().float()
                     C_target_transform_binary = C_target_transform[:, 0, :, :]
-                    mask_target_cloth = torch.zeros(C_target_transform_binary.size(), dtype=torch.uint8).cuda()
+                    mask_target_cloth = torch.zeros(C_target_transform_binary.size(), dtype=torch.uint8).cuda().float()
                     mask_target_cloth[torch.all(C_target_transform_binary > 0)] = 1
 
                     loss_shape_l2 = self.L2_loss(fake_target_upper, mask_target_cloth)
