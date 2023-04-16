@@ -91,6 +91,7 @@ def add_all_arguments(parser, train):
         parser.add_argument('--add_l2_loss', action='store_true', help='if specified, add L2 loss')
         parser.add_argument('--add_crossEntropy_loss', action='store_true', help='if specified, add cross entropy loss')
         parser.add_argument('--add_parsing_loss', action='store_true', help='if specified, add parsing loss')
+        parser.add_argument('--add_shape_loss', action='store_true', help='if specified, add shape loss')
         parser.add_argument('--lambda_l1', type=float, default=1.0, help='weight for L1 loss')
         parser.add_argument('--add_d_loss', action="store_true", help="if specified, add segmentation discriminator loss")
         parser.add_argument('--add_cd_loss', action="store_true", help="if specified, add conditional discriminator loss")
