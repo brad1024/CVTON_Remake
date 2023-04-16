@@ -140,10 +140,10 @@ new_densepose = [
 vitonHD_parse_labels = [  # 15
     [254, 85, 0],  # top
     [0, 0, 85],  # one piece
+    [0, 119, 220],  # jacket
     [85, 51, 0],  # torso
     [0, 254, 254],  # right arm
     [51, 169, 220],  # left arm
-    [0, 119, 220],  # jacket
     [0, 0, 0],  # background
     [0, 85, 85],  # pants
     [254, 0, 0],  # hair
@@ -404,6 +404,21 @@ class VitonHDDataset(Dataset):
             human_parse_transf[np.all(human_parse == color, axis=-1)] = i
         human_parse_transf = np.expand_dims(human_parse_transf, 0)
         human_parse_transf = torch.tensor(human_parse_transf)
+        """
+        target_parse = cv2.imread(
+            os.path.join(self.db_path, self.db_f, "image-parse-v3", df_row["target"].replace(".jpg", ".png")))
+        target_parse = cv2.cvtColor(target_parse, cv2.COLOR_BGR2RGB)
+        target_parse = cv2.resize(target_parse, self.opt.img_size[::-1], interpolation=cv2.INTER_NEAREST)
+        target_parse_transf = np.zeros(self.opt.img_size)
+        for i, color in enumerate(vitonHD_parse_labels):
+            target_parse_transf[np.all(target_parse == color, axis=-1)] = i
+            if i != 0 or i != 1 or i != 5:
+                mask[np.all(target_parse == color, axis=-1)] = 1.0
+            else:
+
+        human_parse_transf = np.expand_dims(human_parse_transf, 0)
+        human_parse_transf = torch.tensor(human_parse_transf)
+        """
 
         return {"image": {"I": image,
                           "C_t": cloth_image,
