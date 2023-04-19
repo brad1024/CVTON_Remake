@@ -159,7 +159,7 @@ class PDiscriminator(nn.Module):
 
 class HumanParsingDiscriminator(nn.Module):
     def __init__(self, opt):
-        super(PDiscriminator, self).__init__()
+        super(HumanParsingDiscriminator, self).__init__()
         self.opt = opt
         """
         if opt.img_size[0] == 64:
