@@ -96,6 +96,7 @@ def add_all_arguments(parser, train):
         parser.add_argument('--add_d_loss', action="store_true", help="if specified, add segmentation discriminator loss")
         parser.add_argument('--add_cd_loss', action="store_true", help="if specified, add conditional discriminator loss")
         parser.add_argument('--add_pd_loss', action="store_true", help="if specified, add patch discriminator loss")
+        parser.add_argument('--add_hd_loss', action="store_true", help="if specified, add human parsing discriminator loss")
         parser.add_argument('--patch_size', type=int, default=0, help="patch size for patch discriminator")
         parser.add_argument('--no_balancing_inloss', action='store_true', default=False, help='if specified, do *not* use class balancing in the loss function')
         parser.add_argument('--no_labelmix', action='store_true', default=False, help='if specified, do *not* use LabelMix')

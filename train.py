@@ -52,7 +52,8 @@ if __name__ == '__main__':
         optimizerCD = torch.optim.Adam(model.module.netCD.parameters(), lr=opt.lr_d, betas=(opt.beta1, opt.beta2))
     if opt.add_pd_loss:
         optimizerPD = torch.optim.Adam(model.module.netPD.parameters(), lr=opt.lr_d, betas=(opt.beta1, opt.beta2))
-
+    if opt.add_hd_loss:
+        optimizerHD = torch.optim.Adam(model.module.netHD.parameters(), lr=opt.lr_d, betas=(opt.beta1, opt.beta2))
     scaler = GradScaler()
 
     #--- the training loop ---#
@@ -129,6 +130,16 @@ if __name__ == '__main__':
             else:
                 losses_PD_list = [None, None]
 
+            if opt.add_hd_loss:
+                #--- conditional discriminator update ---#
+                model.module.netHD.zero_grad()
+                loss_HD, losses_HD_list = model(image, label, "losses_HD", losses_computer, agnostic=agnostic, human_parsing=human_parsing)
+                loss_HD, losses_HD_list = loss_HD.mean(), [loss.mean() if loss is not None else None for loss in losses_HD_list]
+
+                scaler.scale(loss_HD).backward()
+                scaler.step(optimizerHD)
+            else:
+                losses_HD_list = [None, None]
             scaler.update()
 
             #--- stats update ---#

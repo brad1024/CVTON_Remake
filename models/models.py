@@ -35,7 +35,8 @@ class OASIS_model(nn.Module):
                 self.netCD = discriminators.CDiscriminator(opt)
             if self.opt.add_pd_loss:
                 self.netPD = discriminators.PDiscriminator(opt)
-
+            if self.opt.add_hd_loss:
+                self.netHD = discriminators.HumanParsingDiscriminator(opt)
         self.print_parameter_count()
         self.init_networks()
 
@@ -374,6 +375,22 @@ class OASIS_model(nn.Module):
                 loss_PD += loss_PD_real
 
                 return loss_PD, [loss_PD_fake, loss_PD_real]
+            elif mode == "losses_HD":
+                loss_HD = 0
+                image = generate_swapped_batch(image)
+                cloth_seg = self.edit_cloth_seg(image["C_t"], label["body_seg"], label["cloth_seg"])
+                with torch.no_grad():
+                    fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["target_cloth_mask"],
+                                                  label["body_seg"], cloth_seg, label["densepose_seg"],
+                                                  agnostic=agnostic)
+                    fake_parsing = fake[:, 3:, :, :]
+                output_HD_fake = self.netHD(fake_parsing, image["target_cloth_mask"], label["densepose_seg"])#
+                loss_HD_fake = losses_computer.loss_adv(output_HD_fake, for_real=False)
+                loss_HD += loss_HD_fake
+                output_HD_real = self.netHD(label["target_parsing"], image["target_cloth_mask"], label['densepose_seg_target'])
+                loss_HD_real = losses_computer.loss_adv(output_HD_real, for_real=True)
+                loss_HD += loss_HD_real
+                return loss_HD, [loss_HD_fake, loss_HD_real]
             elif mode == "generate":
                 with torch.no_grad():
                     if self.opt.no_EMA:
@@ -497,12 +514,16 @@ def preprocess_input(opt, data):
     data['cloth_label'] = data['cloth_label'].long()
     data['body_label'] = data['body_label'].long()
     data['densepose_label'] = data['densepose_label'].long()
+    data['densepose_label_target'] = data['densepose_label_target'].long()
     data['human_parsing'] = data['human_parsing'].long()
+    data['human_parsing_target'] = data['human_parsing_target'].long()
 
     data['cloth_label'] = data['cloth_label'].cuda()
     data['body_label'] = data['body_label'].cuda()
     data['densepose_label'] = data['densepose_label'].cuda()
+    data['densepose_label_target'] = data['densepose_label_target'].cuda()
     data['human_parsing'] = data['human_parsing'].cuda()
+    data['human_parsing_target'] = data['human_parsing_target'].cuda()
 
     for key in data['image'].keys():
         data['image'][key] = data['image'][key].cuda()
@@ -525,14 +546,26 @@ def preprocess_input(opt, data):
     input_densepose_label = torch.cuda.FloatTensor(bs, nc, h, w).zero_()
     input_densepose_semantics = input_densepose_label.scatter_(1, label_densepose_map, 1.0)
 
+    label_densepose_map_target = data['densepose_label_target']
+    bs, _, h, w = label_densepose_map_target.size()
+    nc = opt.semantic_nc[2]  # 26
+    input_densepose_label_target = torch.cuda.FloatTensor(bs, nc, h, w).zero_()
+    input_densepose_semantics_target = input_densepose_label_target.scatter_(1, label_densepose_map_target, 1.0)
+
     human_parsing_map = data["human_parsing"]
     bs, _, h, w = human_parsing_map.size()
     nc = 16
     input_human_parsing_label = torch.cuda.FloatTensor(bs, nc, h, w).zero_()
     input_human_parsing_semantics = input_human_parsing_label.scatter_(1, human_parsing_map, 1.0)
 
+    human_parsing_target_map = data["human_parsing_target"]
+    bs, _, h, w = human_parsing_target_map.size()
+    nc = 16
+    input_human_parsing_target_label = torch.cuda.FloatTensor(bs, nc, h, w).zero_()
+    input_human_parsing_target_semantics = input_human_parsing_target_label.scatter_(1, human_parsing_target_map, 1.0)
+
     return data['image'], {"body_seg": input_body_semantics, "cloth_seg": input_cloth_semantics,
-                           "densepose_seg": input_densepose_semantics}, input_human_parsing_semantics
+                           "densepose_seg": input_densepose_semantics,"densepose_seg_target": input_densepose_semantics_target, "target_parsing":input_human_parsing_target_semantics}, input_human_parsing_semantics
 
 
 def generate_labelmix(label, fake_image, real_image):

@@ -206,7 +206,7 @@ class VitonHDDataset(Dataset):
         ])
 
         if phase in {"train", "train_whole"} and self.opt.add_pd_loss:
-            self.hand_indices = [2, 7, 11, 14]
+            self.hand_indices = [3, 4, 5]
             self.body_label_centroids = [None] * len(self.filepath_df)
         else:
             self.body_label_centroids = None
@@ -308,10 +308,17 @@ class VitonHDDataset(Dataset):
         densepose_seg = cv2.cvtColor(densepose_seg, cv2.COLOR_BGR2RGB)
         densepose_seg = cv2.resize(densepose_seg, self.opt.img_size[::-1],
                                    interpolation=cv2.INTER_NEAREST)  # INTER_LINEAR
+
+        densepose_seg_target = cv2.imread(
+            os.path.join(self.db_path, self.db_f, "image-densepose", df_row["target"]))
+        densepose_seg_target = cv2.cvtColor(densepose_seg_target, cv2.COLOR_BGR2RGB)
+        densepose_seg_target = cv2.resize(densepose_seg_target, self.opt.img_size[::-1],
+                                   interpolation=cv2.INTER_NEAREST)  # INTER_LINEAR
         # print('img_size')
         # print(str(self.opt.img_size[::-1]))
         # time.sleep(10)
         densepose_seg_transf = np.zeros(self.opt.img_size)
+        densepose_seg_transf_target = np.zeros(self.opt.img_size)
         # for i, color in enumerate(vitonHD_densepose_labels):
         #    densepose_seg_transf[np.all(densepose_seg == color, axis=-1)] = i
         for i, color in enumerate(vitonHD_densepose_labels):
@@ -328,6 +335,19 @@ class VitonHDDataset(Dataset):
         densepose_seg_transf = np.expand_dims(densepose_seg_transf, 0)
         densepose_seg_transf = torch.tensor(densepose_seg_transf)
 
+        for i, color in enumerate(vitonHD_densepose_labels):
+            for j, row in enumerate(densepose_seg_target):
+                for k, pixel in enumerate(row):
+                    # print(densepose_seg.shape)
+                    # print('pixel')
+                    # print(pixel.shape)
+                    # print('color')
+                    # print(color)
+                    if abs(pixel[0] - color[0]) < 10 and abs(pixel[1] - color[1]) < 10 and abs(
+                            pixel[2] - color[2]) < 10:
+                        densepose_seg_transf_target[j][k] = i
+        densepose_seg_transf_target = np.expand_dims(densepose_seg_transf_target, 0)
+        densepose_seg_transf_target = torch.tensor(densepose_seg_transf_target)
         # scale the inputs to range [-1, 1]
         image = self.transform(image)
         image = (image - 0.5) / 0.5
@@ -404,6 +424,17 @@ class VitonHDDataset(Dataset):
             human_parse_transf[np.all(human_parse == color, axis=-1)] = i
         human_parse_transf = np.expand_dims(human_parse_transf, 0)
         human_parse_transf = torch.tensor(human_parse_transf)
+
+        human_parse_target = cv2.imread(
+            os.path.join(self.db_path, self.db_f, "image-parse-v3", df_row["target"].replace(".jpg", ".png")))
+        human_parse_target = cv2.cvtColor(human_parse_target, cv2.COLOR_BGR2RGB)
+        human_parse_target = cv2.resize(human_parse_target, self.opt.img_size[::-1], interpolation=cv2.INTER_NEAREST)
+
+        human_parse_target_transf = np.zeros(self.opt.img_size)
+        for i, color in enumerate(vitonHD_parse_labels):
+            human_parse_target_transf[np.all(human_parse_target == color, axis=-1)] = i
+        human_parse_target_transf = np.expand_dims(human_parse_target_transf, 0)
+        human_parse_target_transf = torch.tensor(human_parse_target_transf)
         """
         target_parse = cv2.imread(
             os.path.join(self.db_path, self.db_f, "image-parse-v3", df_row["target"].replace(".jpg", ".png")))
@@ -429,11 +460,13 @@ class VitonHDDataset(Dataset):
                 "cloth_label": cloth_seg_transf,
                 "body_label": body_seg_transf,
                 "densepose_label": densepose_seg_transf,
+                "densepose_label_target": densepose_seg_transf_target,
                 "name": df_row["poseA"],
                 "agnostic": agnostic,
                 "original_size": original_size,
                 "label_centroid": body_label_centroid,
-                "human_parsing": human_parse_transf}
+                "human_parsing": human_parse_transf,
+                "human_parsing_target": human_parse_target_transf}
 
     def __len__(self):
         return len(self.filepath_df)
