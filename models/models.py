@@ -151,6 +151,13 @@ class OASIS_model(nn.Module):
                 else:
                     loss_G_adv_CD = None
 
+                if self.opt.add.add_hd_loss:
+                    output_HD = self.netHD(fake_target[:, 3:, :, :], image["target_cloth_mask"], label["densepose_seg"])
+                    loss_G_adv_HD = losses_computer.loss_adv(output_HD, for_real=True)
+                    loss_G += loss_G_adv_HD
+                else:
+                    loss_G_adv_HD = None
+
                 if self.opt.add_pd_loss:
                     fake = generate_patches(self.opt, fake, label_centroids)
 
@@ -229,7 +236,8 @@ class OASIS_model(nn.Module):
                     loss_shape_l2 = self.L2_loss(fake_target_upper, mask_target_cloth)
                     loss_G += loss_shape_l2
 
-                return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD,
+
+                return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD, loss_G_adv_HD,
                                 loss_G_adv_PD, loss_G_vgg, loss_G_l1, loss_G_lpips]
 
             elif mode == "losses_D":
