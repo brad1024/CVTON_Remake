@@ -80,7 +80,8 @@ semantic_body_labels = [  # 15
     [255, 0, 0],
     [255, 0, 255]
 ]
-vitonHD_densepose_labels = [  # 25 -/->20
+"""
+vitonHD_densepose_labels_old = [  # 25 -/->20
     [0, 0, 0],
     [20, 80, 194],
     [20, 80, 194],
@@ -108,7 +109,7 @@ vitonHD_densepose_labels = [  # 25 -/->20
     [247, 252, 12]
 ]
 """
-new_densepose = [
+vitonHD_densepose_labels = [  # 25
     [0, 0, 0],
     [37, 60, 162],
     [20, 80, 194],
@@ -135,7 +136,6 @@ new_densepose = [
     [251, 235, 25],
     [248, 251, 14],
 ]
-"""
 
 vitonHD_parse_labels = [  # 15
     [254, 85, 0],  # top
@@ -319,8 +319,9 @@ class VitonHDDataset(Dataset):
         # time.sleep(10)
         densepose_seg_transf = np.zeros(self.opt.img_size)
         densepose_seg_transf_target = np.zeros(self.opt.img_size)
-        # for i, color in enumerate(vitonHD_densepose_labels):
-        #    densepose_seg_transf[np.all(densepose_seg == color, axis=-1)] = i
+        for i, color in enumerate(vitonHD_densepose_labels):
+            densepose_seg_transf[np.all(densepose_seg == color, axis=-1)] = i
+        """ 
         for i, color in enumerate(vitonHD_densepose_labels):
             for j, row in enumerate(densepose_seg):
                 for k, pixel in enumerate(row):
@@ -331,10 +332,13 @@ class VitonHDDataset(Dataset):
                     # print(color)
                     if abs(pixel[0] - color[0]) < 10 and abs(pixel[1] - color[1]) < 10 and abs(
                             pixel[2] - color[2]) < 10:
-                        densepose_seg_transf[j][k] = i
+                        densepose_seg_transf[j][k] = i"""
         densepose_seg_transf = np.expand_dims(densepose_seg_transf, 0)
         densepose_seg_transf = torch.tensor(densepose_seg_transf)
 
+        for i, color in enumerate(vitonHD_densepose_labels):
+            densepose_seg_transf_target[np.all(densepose_seg_target == color, axis=-1)] = i
+        """
         for i, color in enumerate(vitonHD_densepose_labels):
             for j, row in enumerate(densepose_seg_target):
                 for k, pixel in enumerate(row):
@@ -345,7 +349,7 @@ class VitonHDDataset(Dataset):
                     # print(color)
                     if abs(pixel[0] - color[0]) < 10 and abs(pixel[1] - color[1]) < 10 and abs(
                             pixel[2] - color[2]) < 10:
-                        densepose_seg_transf_target[j][k] = i
+                        densepose_seg_transf_target[j][k] = i"""
         densepose_seg_transf_target = np.expand_dims(densepose_seg_transf_target, 0)
         densepose_seg_transf_target = torch.tensor(densepose_seg_transf_target)
         # scale the inputs to range [-1, 1]
