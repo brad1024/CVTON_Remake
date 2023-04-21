@@ -151,7 +151,7 @@ class OASIS_model(nn.Module):
                 else:
                     loss_G_adv_CD = None
 
-                if self.opt.add.add_hd_loss:
+                if self.opt.add_hd_loss:
                     output_HD = self.netHD(fake_target[:, 3:, :, :], image["target_cloth_mask"], label["densepose_seg"])
                     loss_G_adv_HD = losses_computer.loss_adv(output_HD, for_real=True)
                     loss_G += loss_G_adv_HD
