@@ -162,7 +162,7 @@ class OASIS_model(nn.Module):
 
                 if self.opt.add_bd_loss:
                     mask_bottom = label["bottom_mask"].detach().clone()
-                    mask_bottom.expand(-1, 3)
+                    #mask_bottom.expand(-1, 3)
                     output_BD = self.netBD(fake*mask_bottom)
                     loss_G_adv_BD = losses_computer.loss_adv(output_BD, for_real=True)
                     loss_G += loss_G_adv_BD
@@ -426,7 +426,7 @@ class OASIS_model(nn.Module):
                                                   label["body_seg"], cloth_seg, label["densepose_seg"],
                                                   agnostic=agnostic)
                 mask_bottom = label["bottom_mask"].detach().clone()
-                mask_bottom.expand(-1, 3)
+                #mask_bottom.expand(-1, 3)
                 output_BD_fake = self.netBD(fake[:, 0:3, :, :] * mask_bottom)
                 loss_BD_fake = losses_computer(output_BD_fake, for_real=False)
                 loss_BD += loss_BD_fake
