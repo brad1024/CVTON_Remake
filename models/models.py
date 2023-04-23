@@ -37,6 +37,8 @@ class OASIS_model(nn.Module):
                 self.netPD = discriminators.PDiscriminator(opt)
             if self.opt.add_hd_loss:
                 self.netHD = discriminators.HumanParsingDiscriminator(opt)
+            if self.opt.add_bd_loss:
+                self.netBD = discriminators.BottomDiscriminator(opt)
         self.print_parameter_count()
         self.init_networks()
 
@@ -158,6 +160,15 @@ class OASIS_model(nn.Module):
                 else:
                     loss_G_adv_HD = None
 
+                if self.opt.add_bd_loss:
+                    mask_bottom = label["bottom_mask"].detach().clone()
+                    mask_bottom.expand(-1, 3)
+                    output_BD = self.netBD(fake*mask_bottom)
+                    loss_G_adv_BD = losses_computer.loss_adv(output_BD, for_real=True)
+                    loss_G += loss_G_adv_BD
+                else:
+                    loss_G_adv_BD = None
+
                 if self.opt.add_pd_loss:
                     fake = generate_patches(self.opt, fake, label_centroids)
 
@@ -173,6 +184,7 @@ class OASIS_model(nn.Module):
                     loss_G_adv_PD = None
 
                 image = generate_swapped_batch(image)
+
 
                 if self.opt.add_vgg_loss or self.opt.add_lpips_loss or self.opt.add_l1_loss:
                     fake, C_transform = self.netG(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"],
@@ -238,8 +250,8 @@ class OASIS_model(nn.Module):
                     loss_shape_l2 = self.L2_loss(fake_target_upper, mask_target_cloth)
                     loss_G += loss_shape_l2
 
-
-                return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD, loss_G_adv_HD,
+                return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD,
+                                loss_G_adv_HD, loss_G_adv_BD,
                                 loss_G_adv_PD, loss_G_vgg, loss_G_l1, loss_G_lpips]
 
             elif mode == "losses_D":
@@ -385,6 +397,7 @@ class OASIS_model(nn.Module):
                 loss_PD += loss_PD_real
 
                 return loss_PD, [loss_PD_fake, loss_PD_real]
+
             elif mode == "losses_HD":
                 loss_HD = 0
                 image = generate_swapped_batch(image)
@@ -394,13 +407,34 @@ class OASIS_model(nn.Module):
                                                   label["body_seg"], cloth_seg, label["densepose_seg"],
                                                   agnostic=agnostic)
                     fake_parsing = fake[:, 3:, :, :]
-                output_HD_fake = self.netHD(fake_parsing, image["target_cloth_mask"], label["densepose_seg"])#
+                output_HD_fake = self.netHD(fake_parsing, image["target_cloth_mask"], label["densepose_seg"])  #
                 loss_HD_fake = losses_computer.loss_adv(output_HD_fake, for_real=False)
                 loss_HD += loss_HD_fake
-                output_HD_real = self.netHD(label["target_parsing"], image["target_cloth_mask"], label['densepose_seg_target'])
+                output_HD_real = self.netHD(label["target_parsing"], image["target_cloth_mask"],
+                                            label['densepose_seg_target'])
                 loss_HD_real = losses_computer.loss_adv(output_HD_real, for_real=True)
                 loss_HD += loss_HD_real
+
                 return loss_HD, [loss_HD_fake, loss_HD_real]
+
+            elif mode == "losses_BD":
+                loss_BD = 0
+                image = generate_swapped_batch(image)
+                cloth_seg = self.edit_cloth_seg(image["C_t"], label["body_seg"], label["cloth_seg"])
+                with torch.no_grad():
+                    fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["target_cloth_mask"],
+                                                  label["body_seg"], cloth_seg, label["densepose_seg"],
+                                                  agnostic=agnostic)
+                mask_bottom = label["bottom_mask"].detach().clone()
+                mask_bottom.expand(-1, 3)
+                output_BD_fake = self.netBD(fake[:, 0:3, :, :] * mask_bottom)
+                loss_BD_fake = losses_computer(output_BD_fake, for_real=False)
+                loss_BD += loss_BD_fake
+                output_BD_real = self.netBD(image["I_bottom"])
+                loss_BD_real = losses_computer(output_BD_real, for_real=True)
+                loss_BD += loss_BD_real
+
+                return loss_BD, [loss_BD_fake, loss_BD_real]
             elif mode == "generate":
                 with torch.no_grad():
                     if self.opt.no_EMA:
@@ -527,6 +561,7 @@ def preprocess_input(opt, data):
     data['densepose_label_target'] = data['densepose_label_target'].long()
     data['human_parsing'] = data['human_parsing'].long()
     data['human_parsing_target'] = data['human_parsing_target'].long()
+    data['bottom_mask'] = data['bottom_mask'].long()
 
     data['cloth_label'] = data['cloth_label'].cuda()
     data['body_label'] = data['body_label'].cuda()
@@ -534,6 +569,7 @@ def preprocess_input(opt, data):
     data['densepose_label_target'] = data['densepose_label_target'].cuda()
     data['human_parsing'] = data['human_parsing'].cuda()
     data['human_parsing_target'] = data['human_parsing_target'].cuda()
+    data['bottom_mask'] = data['bottom_mask'].cuda()
 
     for key in data['image'].keys():
         data['image'][key] = data['image'][key].cuda()
@@ -575,7 +611,10 @@ def preprocess_input(opt, data):
     input_human_parsing_target_semantics = input_human_parsing_target_label.scatter_(1, human_parsing_target_map, 1.0)
 
     return data['image'], {"body_seg": input_body_semantics, "cloth_seg": input_cloth_semantics,
-                           "densepose_seg": input_densepose_semantics,"densepose_seg_target": input_densepose_semantics_target, "target_parsing":input_human_parsing_target_semantics}, input_human_parsing_semantics
+                           "densepose_seg": input_densepose_semantics,
+                           "densepose_seg_target": input_densepose_semantics_target,
+                           "target_parsing": input_human_parsing_target_semantics,
+                           "bottom_mask": data['bottom_mask']}, input_human_parsing_semantics
 
 
 def generate_labelmix(label, fake_image, real_image):

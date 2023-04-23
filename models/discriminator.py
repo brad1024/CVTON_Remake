@@ -262,6 +262,49 @@ class HumanParsingDiscriminator(nn.Module):
         return x
 
 
+class BottomDiscriminator(nn.Module):
+
+    def __init__(self, opt):
+        super(BottomDiscriminator, self).__init__()
+        self.opt = opt
+
+        if opt.img_size[0] == 64:
+            self.channels = [3, 128, 128, 256, 512]
+        elif opt.img_size[0] == 256:
+            self.channels = [3, 128, 128, 256, 256, 512, 512]
+        elif self.opt.img_size[0] == 512:
+            self.channels = [3, 128, 128, 256, 256, 512, 512, 512]
+        elif self.opt.img_size[0] == 1024:
+            self.channels = [3, 128, 128, 256, 256, 256, 512, 512, 512]
+        else:
+            raise NotImplementedError
+
+        body_down = []
+
+        # encoder part
+        for i in range(opt.num_res_blocks):
+            body_down.append(residual_block_D(self.channels[i], self.channels[i + 1], opt, -1, first=(i == 0)))
+
+        self.body_down = nn.Sequential(*body_down)
+
+        norm_layer = norms.get_spectral_norm(opt)
+        self.end = nn.Sequential(
+            nn.LeakyReLU(0.2, False),
+            norm_layer(nn.Conv2d(512, 64, kernel_size=1))
+        )
+
+        self.linear = nn.Sequential(
+            nn.LeakyReLU(0.2, False),
+            nn.Flatten(),
+            norm_layer(nn.Linear(64 * 4 * 3, out_features=1))
+        )
+
+    def forward(self, I_bottom):
+        enc = self.end(self.body_down(I_bottom))
+        x = self.linear(enc)
+        return x
+
+
 class residual_block_D(nn.Module):
     def __init__(self, fin, fout, opt, up_or_down, first=False):
         super().__init__()

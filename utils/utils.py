@@ -70,7 +70,7 @@ class timer():
 class losses_saver():
     def __init__(self, opt):
         self.name_list = ["Generator_D_body", "Generator_D_cloth", "Generator_D_densepose", "Generator_CD", "Generator_HD",
-                          "Generator_PD", "Vgg", "L1", "LPIPS", "D_fake_body", "D_fake_cloth", "D_fake_densepose",
+                          "Generator_BD", "Generator_PD", "Vgg", "L1", "LPIPS", "D_fake_body", "D_fake_cloth", "D_fake_densepose",
                           "D_real_body", "D_real_cloth", "D_real_densepose", "LabelMix", "CD_fake", "CD_real",
                           "PD_fake", "PD_real"]
         self.opt = opt

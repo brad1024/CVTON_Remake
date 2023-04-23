@@ -249,18 +249,24 @@ class VitonHDDataset(Dataset):
         # additionally, get cloth segmentations by cloth part
         cloth_seg_transf = np.zeros(self.opt.img_size)
         mask = np.zeros(self.opt.img_size)
+        mask_bottom = np.zeros(self.opt.img_size)
         for i, color in enumerate(vitonHD_parse_labels):
             cloth_seg_transf[np.all(cloth_seg == color, axis=-1)] = i
             if i < (
                     6 + self.opt.no_bg):  # this works, because colors are sorted in a specific way with background being the 8th. # or i == 7 or i == 9
                 mask[np.all(cloth_seg == color, axis=-1)] = 1.0
-
+            if self.opt.no_bottom:
+                if i == 7 or i == 9:
+                    mask[np.all(cloth_seg == color, axis=-1)] = 1.0
+                    mask_bottom[np.all(cloth_seg == color, axis=-1)] = 1.0
         cloth_seg_transf = np.expand_dims(cloth_seg_transf, 0)
         cloth_seg_transf = torch.tensor(cloth_seg_transf)
 
         mask = np.repeat(np.expand_dims(mask, -1), 3, axis=-1).astype(np.uint8)
         masked_image = image * (1 - mask)
 
+        mask_bottom = np.repeat(np.expand_dims(mask, -1), 3, axis=-1).astype(np.uint8)
+        mask_image_bottom = image * mask_bottom
         """
         bgr_mask_image = cv2.cvtColor(masked_image, cv2.COLOR_RGB2BGR)
         bgr_mask_image = cv2.resize(bgr_mask_image, (512, 512))
@@ -357,6 +363,8 @@ class VitonHDDataset(Dataset):
         image = (image - 0.5) / 0.5
         masked_image = self.transform(masked_image)
         masked_image = (masked_image - 0.5) / 0.5
+        mask_image_bottom = self.transform(mask_image_bottom)
+        mask_image_bottom = (mask_image_bottom - 0.5) / 0.5
         cloth_image = self.transform(cloth_image)
         cloth_image = (cloth_image - 0.5) / 0.5
         target_cloth = self.transform(target_cloth)
@@ -365,6 +373,8 @@ class VitonHDDataset(Dataset):
         target_cloth_mask = (target_cloth_mask - 0.5) / 0.5
         cloth_mask = self.transform(cloth_mask)
         cloth_mask = (cloth_mask - 0.5) / 0.5
+        mask_bottom = self.transform(mask_bottom)
+        #mask_bottom = (mask_bottom - 0.5) / 0.5
 
         if self.opt.bpgm_id.find("old") >= 0:
             # load pose points
@@ -460,7 +470,8 @@ class VitonHDDataset(Dataset):
                           "target_cloth": target_cloth,
                           "I_m": masked_image,
                           "target_cloth_mask": target_cloth_mask,
-                          "cloth_mask": cloth_mask},
+                          "cloth_mask": cloth_mask,
+                          "I_bottom": mask_image_bottom},
                 "cloth_label": cloth_seg_transf,
                 "body_label": body_seg_transf,
                 "densepose_label": densepose_seg_transf,
@@ -470,7 +481,8 @@ class VitonHDDataset(Dataset):
                 "original_size": original_size,
                 "label_centroid": body_label_centroid,
                 "human_parsing": human_parse_transf,
-                "human_parsing_target": human_parse_target_transf}
+                "human_parsing_target": human_parse_target_transf,
+                "bottom_mask": mask_bottom}
 
     def __len__(self):
         return len(self.filepath_df)
