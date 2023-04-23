@@ -210,8 +210,10 @@ class OASIS_model(nn.Module):
                     loss_G_lpips = None
                     loss_G_lpips_parsing = None
                 if self.opt.add_l2_loss:
+                    """
                     loss_G_l2 = self.L2_loss(full_fake[:, 3:, :, :], human_parsing)
-                    loss_G += loss_G_l2
+                    loss_G += loss_G_l2"""
+                    loss_G_l2 = None
                 else:
                     loss_G_l2 = None
 
