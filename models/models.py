@@ -428,10 +428,10 @@ class OASIS_model(nn.Module):
                 mask_bottom = label["bottom_mask"].detach().clone()
                 #mask_bottom.expand(-1, 3)
                 output_BD_fake = self.netBD(fake[:, 0:3, :, :] * mask_bottom)
-                loss_BD_fake = losses_computer(output_BD_fake, for_real=False)
+                loss_BD_fake = losses_computer.loss_adv(output_BD_fake, for_real=False)
                 loss_BD += loss_BD_fake
                 output_BD_real = self.netBD(image["I_bottom"])
-                loss_BD_real = losses_computer(output_BD_real, for_real=True)
+                loss_BD_real = losses_computer.loss_adv(output_BD_real, for_real=True)
                 loss_BD += loss_BD_real
 
                 return loss_BD, [loss_BD_fake, loss_BD_real]
