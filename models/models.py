@@ -84,14 +84,14 @@ class OASIS_model(nn.Module):
                 # cloth_seg = self.edit_cloth_seg(image["C_t"], label["body_seg"], label["cloth_seg"])
 
                 # fake now has 19 channels
-                fake, C_transform = self.netG(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"],
+                fake, C_transform = self.netG(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"],
                                               label["cloth_seg"], label["densepose_seg"], agnostic=agnostic,
                                               human_parsing=human_parsing)
                 full_fake = fake
                 fake = fake[:, 0:3, :, :]
                 # from PIL import Image
                 # import numpy as np
-                fake_target, C_target_transform = self.netG(image["I_m"], image["target_cloth"],
+                fake_target, C_target_transform = self.netG(image["I_m"], image["target_cloth"], image["I_bottom"],
                                                             image["target_cloth_mask"], label["body_seg"],
                                                             label["cloth_seg"], label["densepose_seg"],
                                                             agnostic=agnostic, human_parsing=human_parsing)
@@ -187,7 +187,7 @@ class OASIS_model(nn.Module):
 
 
                 if self.opt.add_vgg_loss or self.opt.add_lpips_loss or self.opt.add_l1_loss:
-                    fake, C_transform = self.netG(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"],
+                    fake, C_transform = self.netG(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"],
                                                   label["cloth_seg"], label["densepose_seg"], agnostic=agnostic,
                                                   human_parsing=human_parsing)
                     full_fake = fake
@@ -265,7 +265,7 @@ class OASIS_model(nn.Module):
 
                     with torch.no_grad():
                         # fake = self.netG(image["I_m"], image["C_t_swap"], label["body_seg"], cloth_seg, label["densepose_seg"])
-                        fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["target_cloth_mask"],
+                        fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["I_bottom"], image["target_cloth_mask"],
                                                       label["body_seg"], label["cloth_seg"], label["densepose_seg"],
                                                       agnostic=agnostic, human_parsing=human_parsing)
                         full_fake = fake
@@ -349,7 +349,7 @@ class OASIS_model(nn.Module):
 
                 with torch.no_grad():
                     # fake = self.netG(image["I_m"], image["C_t_swap"], label["body_seg"], cloth_seg, label["densepose_seg"])
-                    fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["target_cloth_mask"],
+                    fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["I_bottom"], image["target_cloth_mask"],
                                                   label["body_seg"], cloth_seg, label["densepose_seg"],
                                                   agnostic=agnostic)
                     full_fake = fake
@@ -378,7 +378,7 @@ class OASIS_model(nn.Module):
 
                 with torch.no_grad():
                     # fake = self.netG(image["I_m"], image["C_t_swap"], label["body_seg"], cloth_seg, label["densepose_seg"])
-                    fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["target_cloth_mask"],
+                    fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["I_bottom"], image["target_cloth_mask"],
                                                   label["body_seg"], cloth_seg, label["densepose_seg"],
                                                   agnostic=agnostic)
                     full_fake = fake
@@ -403,7 +403,7 @@ class OASIS_model(nn.Module):
                 image = generate_swapped_batch(image)
                 cloth_seg = self.edit_cloth_seg(image["C_t"], label["body_seg"], label["cloth_seg"])
                 with torch.no_grad():
-                    fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["target_cloth_mask"],
+                    fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["I_bottom"], image["target_cloth_mask"],
                                                   label["body_seg"], cloth_seg, label["densepose_seg"],
                                                   agnostic=agnostic)
                     fake_parsing = fake[:, 3:, :, :]
@@ -422,7 +422,7 @@ class OASIS_model(nn.Module):
                 image = generate_swapped_batch(image)
                 cloth_seg = self.edit_cloth_seg(image["C_t"], label["body_seg"], label["cloth_seg"])
                 with torch.no_grad():
-                    fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["target_cloth_mask"],
+                    fake, C_transform = self.netG(image["I_m"], image["target_cloth"], image["I_bottom"], image["target_cloth_mask"],
                                                   label["body_seg"], cloth_seg, label["densepose_seg"],
                                                   agnostic=agnostic)
                 mask_bottom = label["bottom_mask"].detach().clone()
@@ -438,13 +438,13 @@ class OASIS_model(nn.Module):
             elif mode == "generate":
                 with torch.no_grad():
                     if self.opt.no_EMA:
-                        fake, C_transform = self.netG(image["I_m"], image["C_t"], image["cloth_mask"],
+                        fake, C_transform = self.netG(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"],
                                                       label["body_seg"], label["cloth_seg"], label["densepose_seg"],
                                                       agnostic=agnostic, human_parsing=human_parsing)
                         full_fake = fake
                         fake = fake[:, 0:3, :, :]
                     else:
-                        fake, C_transform = self.netEMA(image["I_m"], image["C_t"], image["cloth_mask"],
+                        fake, C_transform = self.netEMA(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"],
                                                         label["body_seg"], label["cloth_seg"], label["densepose_seg"],
                                                         agnostic=agnostic, human_parsing=human_parsing)
                         full_fake = fake
