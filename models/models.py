@@ -355,14 +355,15 @@ class OASIS_model(nn.Module):
                     full_fake = fake
                     fake = fake[:, 0:3, :, :]
 
+                mask_top = label["top_mask"].detach().clone()
                 # output_CD_fake = self.netCD(fake, image["C_t_swap"])
-                output_CD_fake = self.netCD(fake, image["target_cloth"])
+                output_CD_fake = self.netCD(fake*mask_top, image["target_cloth"])
                 loss_CD_fake = losses_computer.loss_adv(output_CD_fake, for_real=False)
                 loss_CD += loss_CD_fake
 
                 image = generate_swapped_batch(image)
 
-                output_CD_real = self.netCD(image['I'], image["C_t"])
+                output_CD_real = self.netCD(image['I']*mask_top, image["C_t"])
                 loss_CD_real = losses_computer.loss_adv(output_CD_real, for_real=True)
                 loss_CD += loss_CD_real
 
@@ -562,6 +563,7 @@ def preprocess_input(opt, data):
     data['human_parsing'] = data['human_parsing'].long()
     data['human_parsing_target'] = data['human_parsing_target'].long()
     data['bottom_mask'] = data['bottom_mask'].long()
+    data['top_mask'] = data['top_mask'].long()
 
     data['cloth_label'] = data['cloth_label'].cuda()
     data['body_label'] = data['body_label'].cuda()
@@ -570,6 +572,7 @@ def preprocess_input(opt, data):
     data['human_parsing'] = data['human_parsing'].cuda()
     data['human_parsing_target'] = data['human_parsing_target'].cuda()
     data['bottom_mask'] = data['bottom_mask'].cuda()
+    data['top_mask'] = data['top_mask'].cuda()
 
     for key in data['image'].keys():
         data['image'][key] = data['image'][key].cuda()
@@ -614,7 +617,8 @@ def preprocess_input(opt, data):
                            "densepose_seg": input_densepose_semantics,
                            "densepose_seg_target": input_densepose_semantics_target,
                            "target_parsing": input_human_parsing_target_semantics,
-                           "bottom_mask": data['bottom_mask']}, input_human_parsing_semantics
+                           "bottom_mask": data['bottom_mask'],
+                           "top_mask": data['top_mask']}, input_human_parsing_semantics
 
 
 def generate_labelmix(label, fake_image, real_image):

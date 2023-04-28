@@ -250,8 +250,11 @@ class VitonHDDataset(Dataset):
         cloth_seg_transf = np.zeros(self.opt.img_size)
         mask = np.zeros(self.opt.img_size)
         mask_bottom = np.zeros(self.opt.img_size)
+        mask_top = np.zeros(self.opt.img_size)
         for i, color in enumerate(vitonHD_parse_labels):
             cloth_seg_transf[np.all(cloth_seg == color, axis=-1)] = i
+            if i < 3:
+                mask_top[np.all(cloth_seg == color, axis=-1)] = 1.0
             if i < (
                     6 + self.opt.no_bg):  # this works, because colors are sorted in a specific way with background being the 8th. # or i == 7 or i == 9
                 mask[np.all(cloth_seg == color, axis=-1)] = 1.0
@@ -267,6 +270,9 @@ class VitonHDDataset(Dataset):
 
         mask_bottom = np.repeat(np.expand_dims(mask_bottom, -1), 3, axis=-1).astype(np.uint8)
         mask_image_bottom = image * mask_bottom
+
+        mask_top = np.repeat(np.expand_dims(mask_top, -1), 3, axis=-1).astype(np.uint8)
+
         """
         bgr_mask_image = cv2.cvtColor(masked_image, cv2.COLOR_RGB2BGR)
         bgr_mask_image = cv2.resize(bgr_mask_image, (512, 512))
@@ -374,6 +380,7 @@ class VitonHDDataset(Dataset):
         cloth_mask = self.transform(cloth_mask)
         cloth_mask = (cloth_mask - 0.5) / 0.5
         mask_bottom = self.transform(mask_bottom)
+        mask_top = self.transform(mask_top)
         #mask_bottom = (mask_bottom - 0.5) / 0.5
 
         if self.opt.bpgm_id.find("old") >= 0:
@@ -482,7 +489,8 @@ class VitonHDDataset(Dataset):
                 "label_centroid": body_label_centroid,
                 "human_parsing": human_parse_transf,
                 "human_parsing_target": human_parse_target_transf,
-                "bottom_mask": mask_bottom}
+                "bottom_mask": mask_bottom,
+                "top_mask": mask_top}
 
     def __len__(self):
         return len(self.filepath_df)
