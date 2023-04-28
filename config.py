@@ -56,7 +56,7 @@ def add_all_arguments(parser, train):
     parser.add_argument('--spade_ks', type=int, default=3, help='kernel size of convs inside SPADE')
     parser.add_argument('--no_EMA', action='store_true', help='if specified, do *not* compute exponential moving averages')
     parser.add_argument('--EMA_decay', type=float, default=0.9999, help='decay in exponential moving averages')
-    parser.add_argument('--z_dim', type=int, default=12, help="dimension of the latent z vector")
+    parser.add_argument('--z_dim', type=int, default=15, help="dimension of the latent z vector")
     
     parser.add_argument('--val_size', type=float, default=0.05, help="Validation set size (fraction - not int).")
     parser.add_argument('--train_size', type=float, default=0.95, help="Train set size (fraction - not int).")
