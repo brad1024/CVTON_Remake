@@ -54,6 +54,8 @@ if __name__ == '__main__':
         optimizerPD = torch.optim.Adam(model.module.netPD.parameters(), lr=opt.lr_d, betas=(opt.beta1, opt.beta2))
     if opt.add_hd_loss:
         optimizerHD = torch.optim.Adam(model.module.netHD.parameters(), lr=opt.lr_d, betas=(opt.beta1, opt.beta2))
+    if opt.add_bd_loss:
+        optimizerBD = torch.optim.Adam(model.module.netBD.parameters(), lr=opt.lr_d, betas=(opt.beta1, opt.beta2))
     scaler = GradScaler()
 
     #--- the training loop ---#
@@ -140,6 +142,19 @@ if __name__ == '__main__':
                 scaler.step(optimizerHD)
             else:
                 losses_HD_list = [None, None]
+
+            if opt.add_bd_loss:
+                #--- bottom part discriminator update ---#
+                model.module.netBD.zero_grad()
+                loss_BD, losses_BD_list = model(image, label, "losses_BD", losses_computer, agnostic=agnostic,
+                                                human_parsing=human_parsing)
+                loss_BD, losses_BD_list = loss_BD.mean(), [loss.mean() if loss is not None else None for loss in
+                                                           losses_BD_list]
+
+                scaler.scale(loss_BD).backward()
+                scaler.step(optimizerBD)
+            else:
+                losses_BD_list = [None, None]
             scaler.update()
 
             #--- stats update ---#
@@ -149,7 +164,7 @@ if __name__ == '__main__':
             if cur_iter % opt.freq_print == 0:
                 im_saver.visualize_batch(model, image, label, cur_iter, agnostic=agnostic, human_parsing=human_parsing)
                 timer(epoch, cur_iter)
-                visualizer_losses(cur_iter, losses_G_list + losses_D_list + losses_CD_list + losses_PD_list)
+                visualizer_losses(cur_iter, losses_G_list + losses_D_list + losses_CD_list + losses_PD_list + losses_HD_list + losses_BD_list)
 
             if cur_iter % opt.freq_save_ckpt == 0:
                 utils.save_networks(opt, cur_iter, model)
