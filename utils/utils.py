@@ -148,7 +148,7 @@ def update_EMA(model, cur_iter, dataloader, opt, force_run_stats=False):
             for i, data_i in enumerate(dataloader):
                 image, label, human_parsing = models.preprocess_input(opt, data_i)
                 agnostic = data_i["agnostic"].cuda() if opt.bpgm_id.find("old") >= 0 else None
-                fake, C_transform = model.module.netEMA(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic)
+                fake, C_transform = model.module.netEMA(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic)
                 num_upd += 1
                 if num_upd > 50:
                     break
@@ -168,6 +168,12 @@ def save_networks(opt, cur_iter, model, latest=False, best=False):
         if opt.add_pd_loss:
             torch.save(model.module.netPD.state_dict(), path + '/%s_PD.pth' % ("latest"))
 
+        if opt.add_hd_loss:
+            torch.save(model.module.netHD.state_dict(), path + '/%s_HD.pth' % ("latest"))
+
+        if opt.add_bd_loss:
+            torch.save(model.module.netBD.state_dict(), path + '/%s_BD.pth' % ("latest"))
+
         if not opt.no_EMA:
             torch.save(model.module.netEMA.state_dict(), path + '/%s_EMA.pth' % ("latest"))
 
@@ -184,6 +190,12 @@ def save_networks(opt, cur_iter, model, latest=False, best=False):
         if opt.add_pd_loss:
             torch.save(model.module.netPD.state_dict(), path + '/%s_PD.pth' % ("best"))
 
+        if opt.add_hd_loss:
+            torch.save(model.module.netHD.state_dict(), path + '/%s_HD.pth' % ("latest"))
+
+        if opt.add_bd_loss:
+            torch.save(model.module.netBD.state_dict(), path + '/%s_BD.pth' % ("latest"))
+
         if not opt.no_EMA:
             torch.save(model.module.netEMA.state_dict(), path + '/%s_EMA.pth' % ("best"))
 
@@ -199,6 +211,12 @@ def save_networks(opt, cur_iter, model, latest=False, best=False):
 
         if opt.add_pd_loss:
             torch.save(model.module.netPD.state_dict(), path + '/%d_PD.pth' % (cur_iter))
+
+        if opt.add_hd_loss:
+            torch.save(model.module.netHD.state_dict(), path + '/%s_HD.pth' % ("latest"))
+
+        if opt.add_bd_loss:
+            torch.save(model.module.netBD.state_dict(), path + '/%s_BD.pth' % ("latest"))
 
         if not opt.no_EMA:
             torch.save(model.module.netEMA.state_dict(), path + '/%d_EMA.pth' % (cur_iter))
@@ -232,11 +250,11 @@ class image_saver():
         self.save_images(image['target_cloth'], "fake_target_cloth", cur_iter)
         with torch.no_grad():
             model.eval()
-            fake, C_transform = model.module.netG(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"], label["cloth_seg"],
+            fake, C_transform = model.module.netG(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"], label["cloth_seg"],
                                      label["densepose_seg"], agnostic=agnostic)
             fake_parsing = fake[:, 3:, :, :]
             fake = fake[:, 0:3, :, :]
-            fake_target, C_target_transform = model.module.netG(image["I_m"], image["target_cloth"], image["target_cloth_mask"], label["body_seg"], label["cloth_seg"],
+            fake_target, C_target_transform = model.module.netG(image["I_m"], image["target_cloth"], image["I_bottom"], image["target_cloth_mask"], label["body_seg"], label["cloth_seg"],
                                             label["densepose_seg"], agnostic=agnostic)
             fake_target_parsing = fake_target[:, 3:, :, :]
             fake_target = fake_target[:, 0:3, :, :]
@@ -249,7 +267,7 @@ class image_saver():
             model.train()
             if not self.opt.no_EMA:
                 model.eval()
-                fake, C_transform = model.module.netEMA(image["I_m"], image["C_t"], image["cloth_mask"], label["body_seg"], label["cloth_seg"],
+                fake, C_transform = model.module.netEMA(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"], label["cloth_seg"],
                                            label["densepose_seg"], agnostic=agnostic)
                 fake_parsing = fake[:, 3:, :, :]
                 fake = fake[:, 0:3, :, :]
