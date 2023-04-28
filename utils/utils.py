@@ -72,7 +72,7 @@ class losses_saver():
         self.name_list = ["Generator_D_body", "Generator_D_cloth", "Generator_D_densepose", "Generator_CD", "Generator_HD",
                           "Generator_BD", "Generator_PD", "Vgg", "L1", "LPIPS", "D_fake_body", "D_fake_cloth", "D_fake_densepose",
                           "D_real_body", "D_real_cloth", "D_real_densepose", "LabelMix", "CD_fake", "CD_real",
-                          "PD_fake", "PD_real"]
+                          "PD_fake", "PD_real", "HD_fake", "HD_real", "BD_fake", "BD_real"]
         self.opt = opt
         self.freq_smooth_loss = opt.freq_smooth_loss
         self.freq_save_loss = opt.freq_save_loss
