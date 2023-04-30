@@ -371,7 +371,8 @@ class OASIS_model(nn.Module):
                 loss_CD += loss_CD_fake
 
                 image = generate_swapped_batch(image)
-
+                print(image['I'].shape)
+                print(mask_top.shape)
                 output_CD_real = self.netCD(image['I']*mask_top, image["C_t"])
                 loss_CD_real = losses_computer.loss_adv(output_CD_real, for_real=True)
                 loss_CD += loss_CD_real
