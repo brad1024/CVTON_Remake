@@ -356,8 +356,8 @@ class OASIS_model(nn.Module):
                     # fake_parsing = torch.argmax(fake[:, [3, 4, 5], :, :], dim=1)
                     fake = fake[:, 0:3, :, :]
                 mask_top = label["top_mask"].detach().clone()
-                fake_target_parsing = torch.argmax(fake[:, 3:, :, :], dim=1)
-                fake_arg_015 = torch.argmax(fake[:, [3, 4, 5], :, :], dim=1)
+                fake_target_parsing = torch.argmax(full_fake[:, 3:, :, :], dim=1)
+                fake_arg_015 = torch.argmax(full_fake[:, [3, 4, 5], :, :], dim=1)
                 fake_target_upper = torch.eq(fake_target_parsing, fake_arg_015).cuda().float()
 
                 # output_CD_fake = self.netCD(fake, image["C_t_swap"])
