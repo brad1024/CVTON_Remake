@@ -359,7 +359,10 @@ class OASIS_model(nn.Module):
                 fake_target_parsing = torch.argmax(full_fake[:, 3:, :, :], dim=1)
                 fake_arg_015 = torch.argmax(full_fake[:, [3, 4, 5], :, :], dim=1)
                 fake_target_upper = torch.eq(fake_target_parsing, fake_arg_015).cuda().float()
-
+                fake_target_upper_np = fake_target_upper.numpy()
+                fake_target_upper_np = np.repeat(np.expand_dims(fake_target_upper_np, -1), 3, axis=-1).astype(np.uint8)
+                fake_target_upper = torch.Tensor(fake_target_upper_np).cuda().float()
+                print(fake_target_upper.shape)
                 # output_CD_fake = self.netCD(fake, image["C_t_swap"])
                 output_CD_fake = self.netCD(fake*fake_target_upper, image["target_cloth"])
                 loss_CD_fake = losses_computer.loss_adv(output_CD_fake, for_real=False)
