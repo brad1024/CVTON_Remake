@@ -170,7 +170,7 @@ class OASIS_model(nn.Module):
                     loss_G_adv_BD = None
 
                 if self.opt.add_pd_loss:
-                    fake_PD = generate_patches(self.opt, fake_target[:, 3:, :, :], label_centroids)
+                    fake_PD = generate_patches(self.opt, fake_target[:, 0:3, :, :], label_centroids)
 
                     # for i, fake_sample in enumerate(fake):
                     #     # DELET AFTER
