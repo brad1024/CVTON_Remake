@@ -252,7 +252,7 @@ class OASIS_model(nn.Module):
 
                 return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD,
                                 loss_G_adv_HD, loss_G_adv_BD,
-                                loss_G_adv_PD, loss_G_vgg, loss_G_l1, loss_G_lpips]
+                                loss_G_adv_PD, loss_G_vgg, loss_G_l1, loss_G_lpips, loss_G_lpips_parsing,loss_G_parsing, loss_shape_l2]
 
             elif mode == "losses_D":
                 loss_D = 0
