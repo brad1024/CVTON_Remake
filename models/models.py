@@ -147,7 +147,7 @@ class OASIS_model(nn.Module):
 
                 if self.opt.add_cd_loss:
                     # output_CD = self.netCD(fake, image["C_t_swap"])
-                    output_CD = self.netCD(fake_target[:, 3:, :, :], image["target_cloth"])
+                    output_CD = self.netCD(fake_target[:, 0:3, :, :], image["target_cloth"])
                     loss_G_adv_CD = losses_computer.loss_adv(output_CD, for_real=True)
                     loss_G += loss_G_adv_CD
                 else:
