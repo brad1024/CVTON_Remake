@@ -191,10 +191,10 @@ def save_networks(opt, cur_iter, model, latest=False, best=False):
             torch.save(model.module.netPD.state_dict(), path + '/%s_PD.pth' % ("best"))
 
         if opt.add_hd_loss:
-            torch.save(model.module.netHD.state_dict(), path + '/%s_HD.pth' % ("latest"))
+            torch.save(model.module.netHD.state_dict(), path + '/%s_HD.pth' % ("best"))
 
         if opt.add_bd_loss:
-            torch.save(model.module.netBD.state_dict(), path + '/%s_BD.pth' % ("latest"))
+            torch.save(model.module.netBD.state_dict(), path + '/%s_BD.pth' % ("best"))
 
         if not opt.no_EMA:
             torch.save(model.module.netEMA.state_dict(), path + '/%s_EMA.pth' % ("best"))
@@ -213,10 +213,10 @@ def save_networks(opt, cur_iter, model, latest=False, best=False):
             torch.save(model.module.netPD.state_dict(), path + '/%d_PD.pth' % (cur_iter))
 
         if opt.add_hd_loss:
-            torch.save(model.module.netHD.state_dict(), path + '/%s_HD.pth' % ("latest"))
+            torch.save(model.module.netHD.state_dict(), path + '/%s_HD.pth' % (cur_iter))
 
         if opt.add_bd_loss:
-            torch.save(model.module.netBD.state_dict(), path + '/%s_BD.pth' % ("latest"))
+            torch.save(model.module.netBD.state_dict(), path + '/%s_BD.pth' % (cur_iter))
 
         if not opt.no_EMA:
             torch.save(model.module.netEMA.state_dict(), path + '/%d_EMA.pth' % (cur_iter))
