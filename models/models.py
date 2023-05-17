@@ -248,7 +248,7 @@ class OASIS_model(nn.Module):
                     mask_target_cloth[torch.all(C_target_transform_binary > 0)] = 1
 
                     loss_shape_l2 = self.L2_loss(fake_target_upper, mask_target_cloth)
-                    loss_shape_l2 = loss_shape_l2 * 0.5
+                    loss_shape_l2 = loss_shape_l2
                     loss_G += loss_shape_l2
 
                 return loss_G, [loss_G_adv_D_body, loss_G_adv_D_cloth, loss_G_adv_D_densepose, loss_G_adv_CD,
