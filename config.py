@@ -12,9 +12,9 @@ def read_arguments(train=True, whole=False):
     
     opt = parser.parse_args()
     set_dataset_default_lm(opt, parser)
-    if train:
-        if opt.continue_train:
-            update_options_from_file(opt, parser)
+    #if train:
+        #if opt.continue_train:
+        #    update_options_from_file(opt, parser)
     
     opt = parser.parse_args()
     opt.phase = 'train' if train else 'test'
