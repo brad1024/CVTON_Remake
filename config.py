@@ -81,7 +81,7 @@ def add_all_arguments(parser, train):
         parser.add_argument('--beta1', type=float, default=0.0, help='momentum term of adam')
         parser.add_argument('--beta2', type=float, default=0.999, help='momentum term of adam')
         parser.add_argument('--lr_g', type=float, default=0.0001, help='G learning rate, default=0.0001')
-        parser.add_argument('--lr_d', type=float, default=0.0002, help='D learning rate, default=0.0002')
+        parser.add_argument('--lr_d', type=float, default=0.0004, help='D learning rate, default=0.0004')
 
         parser.add_argument('--channels_D', type=int, default=64, help='# of discrim filters in first conv layer in discriminator')
         parser.add_argument('--add_vgg_loss', action='store_true', help='if specified, add VGG feature matching loss')
