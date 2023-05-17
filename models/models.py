@@ -356,6 +356,8 @@ class OASIS_model(nn.Module):
                     full_fake = fake
                     # fake_parsing = torch.argmax(fake[:, [3, 4, 5], :, :], dim=1)
                     fake = fake[:, 0:3, :, :]
+
+                """   
                 mask_top = label["top_mask"].detach().clone()
                 fake_target_parsing = torch.argmax(full_fake[:, 3:, :, :], dim=1)
                 fake_arg_015 = torch.argmax(full_fake[:, [3, 4, 5], :, :], dim=1)
@@ -363,18 +365,19 @@ class OASIS_model(nn.Module):
                 fake_target_upper_np = fake_target_upper.cpu().numpy()
                 fake_target_upper_np = np.repeat(np.expand_dims(fake_target_upper_np, 1), 3, axis=1).astype(np.uint8)
                 fake_target_upper = torch.Tensor(fake_target_upper_np).cuda().float()
+                """
                 #print(fake.shape)
                 #print(fake_target_upper.shape)
 
                 # output_CD_fake = self.netCD(fake, image["C_t_swap"])
-                output_CD_fake = self.netCD(fake*fake_target_upper, image["target_cloth"])
+                output_CD_fake = self.netCD(fake, image["target_cloth"])#*fake_target_upper
                 loss_CD_fake = losses_computer.loss_adv(output_CD_fake, for_real=False)
                 loss_CD += loss_CD_fake
 
                 image = generate_swapped_batch(image)
                 #print(image['I'].shape)
                 #print(mask_top.shape)
-                output_CD_real = self.netCD(image['I']*mask_top, image["C_t"])
+                output_CD_real = self.netCD(image['I'], image["C_t"])#*mask_top
                 loss_CD_real = losses_computer.loss_adv(output_CD_real, for_real=True)
                 loss_CD += loss_CD_real
 
