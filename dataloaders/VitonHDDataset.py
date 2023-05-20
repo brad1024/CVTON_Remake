@@ -315,9 +315,10 @@ class VitonHDDataset(Dataset):
         body_seg_transf = np.expand_dims(body_seg_transf, 0)
         body_seg_transf = torch.tensor(body_seg_transf)
 
-        densepose_seg = cv2.imread(
-            os.path.join(self.db_path, self.db_f, "image-densepose", df_row["poseA"].replace(".jpg", ".png")))
-        if self.phase != "train":
+        if self.phase == "train":
+            densepose_seg = cv2.imread(
+                os.path.join(self.db_path, self.db_f, "image-densepose", df_row["poseA"].replace(".jpg", ".png")))
+        else:
             densepose_seg = cv2.imread(
                 os.path.join(self.db_path, self.db_f, "image-densepose", df_row["poseA"]))
         densepose_seg = cv2.cvtColor(densepose_seg, cv2.COLOR_BGR2RGB)
