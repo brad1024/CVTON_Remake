@@ -207,7 +207,7 @@ if opt.phase == "test":
         origin = tens_to_im(image["I"][0])*255
         origin = cv2.cvtColor(origin, cv2.COLOR_BGR2RGB)
         cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_origin.png"), origin)
-        cloth = tens_to_im(image["C_t"][0])*255
+        cloth = tens_to_im(image["target_cloth"][0])*255
         cloth = cv2.cvtColor(cloth, cv2.COLOR_BGR2RGB)
         cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_cloth.png"), cloth)
         """save_images(image['I'], "real")
