@@ -453,17 +453,27 @@ class OASIS_model(nn.Module):
             elif mode == "generate":
                 with torch.no_grad():
                     if self.opt.no_EMA:
-                        fake, C_transform = self.netG(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"],
+                        """fake, C_transform = self.netG(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"],
                                                       label["body_seg"], label["cloth_seg"], label["densepose_seg"],
-                                                      agnostic=agnostic, human_parsing=human_parsing)
-                        fake_parsing = fake[:, 3:, :, :]
-                        fake = fake[:, 0:3, :, :]
+                                                      agnostic=agnostic, human_parsing=human_parsing)"""
+                        fake_target, C_target_transform = self.netG(image["I_m"], image["target_cloth"],
+                                                                    image["I_bottom"],
+                                                                    image["target_cloth_mask"], label["body_seg"],
+                                                                    label["cloth_seg"], label["densepose_seg"],
+                                                                    agnostic=agnostic, human_parsing=human_parsing)
+                        fake_parsing = fake_target[:, 3:, :, :]
+                        fake = fake_target[:, 0:3, :, :]
                     else:
-                        fake, C_transform = self.netEMA(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"],
+                        """fake, C_transform = self.netEMA(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"],
                                                         label["body_seg"], label["cloth_seg"], label["densepose_seg"],
-                                                        agnostic=agnostic, human_parsing=human_parsing)
-                        fake_parsing = fake[:, 3:, :, :]
-                        fake = fake[:, 0:3, :, :]
+                                                        agnostic=agnostic, human_parsing=human_parsing)"""
+                        fake_target, C_target_transform = self.netG(image["I_m"], image["target_cloth"],
+                                                                    image["I_bottom"],
+                                                                    image["target_cloth_mask"], label["body_seg"],
+                                                                    label["cloth_seg"], label["densepose_seg"],
+                                                                    agnostic=agnostic, human_parsing=human_parsing)
+                        fake_parsing = fake_target[:, 3:, :, :]
+                        fake = fake_target[:, 0:3, :, :]
                 return fake, fake_parsing
 
             else:
