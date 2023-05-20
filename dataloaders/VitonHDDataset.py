@@ -317,6 +317,9 @@ class VitonHDDataset(Dataset):
 
         densepose_seg = cv2.imread(
             os.path.join(self.db_path, self.db_f, "image-densepose", df_row["poseA"].replace(".jpg", ".png")))
+        if self.phase != "train":
+            densepose_seg = cv2.imread(
+                os.path.join(self.db_path, self.db_f, "image-densepose", df_row["poseA"]))
         densepose_seg = cv2.cvtColor(densepose_seg, cv2.COLOR_BGR2RGB)
         densepose_seg = cv2.resize(densepose_seg, self.opt.img_size[::-1],
                                    interpolation=cv2.INTER_NEAREST)  # INTER_LINEAR
