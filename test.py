@@ -66,7 +66,6 @@ if opt.phase == "test":
         pred = model(image, label, "generate", None, agnostic=agnostic).detach().cpu().squeeze().permute(1, 2, 0).numpy()
         # print(pred.shape)
         pred = (pred + 1) / 2
-        
         pred = (pred * 255).astype(np.uint8)
         pred = cv2.cvtColor(pred, cv2.COLOR_RGB2BGR)
         # pred = cv2.resize(pred, (data_i['original_size'][1], data_i['original_size'][0]), interpolation=cv2.INTER_LINEAR)
@@ -79,8 +78,8 @@ if opt.phase == "test":
         elif opt.dataset == "vitonHD":
             filename = data_i['name'][0].split("/")[-1]
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename), pred)
-        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_origin"), image["I_m"])
-        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_cloth"), image["C_t"])
+        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_origin"), tens_to_im(image["I"]))
+        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_cloth"), tens_to_im(image["C_t"]))
         im = tens_to_lab(label["densepose_seg"][0], opt.semantic_nc[2] + 1)
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_densepose"), im)
 
