@@ -456,15 +456,15 @@ class OASIS_model(nn.Module):
                         fake, C_transform = self.netG(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"],
                                                       label["body_seg"], label["cloth_seg"], label["densepose_seg"],
                                                       agnostic=agnostic, human_parsing=human_parsing)
-                        full_fake = fake
+                        fake_parsing = fake[:, 3:, :, :]
                         fake = fake[:, 0:3, :, :]
                     else:
                         fake, C_transform = self.netEMA(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"],
                                                         label["body_seg"], label["cloth_seg"], label["densepose_seg"],
                                                         agnostic=agnostic, human_parsing=human_parsing)
-                        full_fake = fake
+                        fake_parsing = fake[:, 3:, :, :]
                         fake = fake[:, 0:3, :, :]
-                return fake
+                return fake, fake_parsing
 
             else:
                 raise NotImplementedError
