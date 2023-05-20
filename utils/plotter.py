@@ -181,8 +181,8 @@ def evaluate(model, val_dataset, opt):
                 if opt.no_seg:
                     image["I_m"] = image["I"]
                 
-                pred_y, parsing = model(image, label, "generate", None, agnostic=agnostic).detach()
-                
+                pred_y, parsing = model(image, label, "generate", None, agnostic=agnostic)
+                pred_y = pred_y.detach()
                 val_pred_y.append(pred_y.cpu())
                 lpips.append(lpips_fn(pred_y, image["I"]))
         
