@@ -215,7 +215,7 @@ class VitonHDDataset(Dataset):
         df_row = self.filepath_df.iloc[index]
         # get original image of person
         image = cv2.imread(os.path.join(self.db_path, self.db_f, "image", df_row["poseA"]))
-        print(os.path.join(self.db_path, "train", "image", df_row["poseA"]))
+        print(os.path.join(self.db_path, self.db_f, "image", df_row["poseA"]))
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = cv2.resize(image, self.opt.img_size[::-1], interpolation=cv2.INTER_AREA)
