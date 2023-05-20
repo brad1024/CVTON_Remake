@@ -82,7 +82,7 @@ if opt.phase == "test":
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_origin"), image["I_m"])
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_cloth"), image["C_t"])
         im = tens_to_lab(label["densepose_seg"][0], opt.semantic_nc[2] + 1)
-        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_cloth"), im)
+        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_densepose"), im)
 
 
 def tens_to_im(tens):
