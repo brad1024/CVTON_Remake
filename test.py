@@ -126,13 +126,10 @@ def tens_to_lab(tens, num_cl):
     return label_numpy
 
 
-def save_images(self, batch, name , is_label=False):
+def save_images( batch, name , is_label=False):
     fig = plt.figure()
     for i in range(len(batch)):
-        if is_label:
-            im = tens_to_lab(batch[i], self.num_cl[name])
-        else:
-            im = tens_to_im(batch[i])
+        im = tens_to_im(batch[i])
         plt.axis("off")
         fig.add_subplot(2, 2, i + 1)
         plt.axis("off")
@@ -207,11 +204,14 @@ if opt.phase == "test":
         elif opt.dataset == "vitonHD":
             filename = data_i['name'][0].split("/")[-1]
         cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename), pred)
-
-        cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_origin.png"), tens_to_im(image["I"][0])*255)
-        cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_cloth.png"), tens_to_im(image["C_t"][0])*255)
-        save_images(image['I'], "real")
-        save_images(image["C_t"], "cloth")
+        origin = tens_to_im(image["I"][0])*255
+        origin = cv2.cvtColor(origin, cv2.COLOR_BGR2RGB)
+        cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_origin.png"), origin)
+        cloth = tens_to_im(image["C_t"][0])*255
+        cloth = cv2.cvtColor(cloth, cv2.COLOR_BGR2RGB)
+        cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_cloth.png"), cloth)
+        """save_images(image['I'], "real")
+        save_images(image["C_t"], "cloth")"""
         im = tens_to_lab(label["densepose_seg"][0], opt.semantic_nc[2] + 1)
         cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_densepose.png"), im)
 
