@@ -154,8 +154,8 @@ def plot_simple_reconstructions(model, val_dataset, filename, opt, n_imgs=20, sa
 print_fn = print
 def evaluate(model, val_dataset, opt):
     
-    os.makedirs(os.path.join("results", opt.name), exist_ok=True)
-    metric_file = open(os.path.join("results", opt.name, "metrics.log"), "w")
+    os.makedirs(os.path.join("results_test", opt.name), exist_ok=True)
+    metric_file = open(os.path.join("results_test", opt.name, "metrics.log"), "w")
     def print(*args, **kwargs):
         print_fn(*args, **kwargs)
         print_fn(*args, **kwargs, file=metric_file)
