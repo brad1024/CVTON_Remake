@@ -14,7 +14,8 @@ from dataloaders.MPVDataset import MPVDataset
 from dataloaders.VitonDataset import VitonDataset
 from dataloaders.VitonHDDataset import VitonHDDataset
 from utils.plotter import evaluate, plot_simple_reconstructions
-
+import matplotlib.pyplot as plt
+from PIL import Image
 def uint82bin(n, count=8):
     """returns the binary of integer n, count refers to amount of bits"""
     return ''.join([str((n >> y) & 1) for y in range(count - 1, -1, -1)])
@@ -124,6 +125,24 @@ def tens_to_lab(tens, num_cl):
     label_numpy = np.transpose(label_tensor.numpy(), (1, 2, 0))
     return label_numpy
 
+
+def save_images(self, batch, name , is_label=False):
+    fig = plt.figure()
+    for i in range(len(batch)):
+        if is_label:
+            im = tens_to_lab(batch[i], self.num_cl[name])
+        else:
+            im = tens_to_im(batch[i])
+        plt.axis("off")
+        fig.add_subplot(2, 2, i + 1)
+        plt.axis("off")
+        plt.imshow(im)
+    fig.tight_layout()
+    plt.savefig(self.path + "_" + name)
+    plt.close()
+
+
+
 #--- read options ---#
 opt = config.read_arguments(train=False)
 
@@ -172,7 +191,7 @@ if opt.phase == "test":
         if opt.no_seg:
             image["I_m"] = image["I"]
         
-        pred = model(image, label, "generate", None, agnostic=agnostic).detach().cpu().squeeze().permute(1, 2, 0).numpy()
+        pred, parsing = model(image, label, "generate", None, agnostic=agnostic).detach().cpu().squeeze().permute(1, 2, 0).numpy()
         # print(pred.shape)
         pred = (pred + 1) / 2
         pred = (pred * 255).astype(np.uint8)
@@ -188,11 +207,14 @@ if opt.phase == "test":
             filename = data_i['name'][0].split("/")[-1]
         cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename), pred)
 
-        cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_origin.png"), tens_to_im(image["I"][0]))
-        cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_cloth.png"), tens_to_im(image["C_t"][0]))
+        cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_origin.png"), tens_to_im(image["I"][0])*255)
+        cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_cloth.png"), tens_to_im(image["C_t"][0])*255)
+        save_images(image['I'], "real")
+        save_images(image["C_t"], "cloth")
         im = tens_to_lab(label["densepose_seg"][0], opt.semantic_nc[2] + 1)
         cv2.imwrite(os.path.join("results_test", opt.name, opt.phase + "_images", filename[:-4]+"_densepose.png"), im)
 
+    print()
 
 
 
