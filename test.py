@@ -1,5 +1,5 @@
 import os
-
+import torch
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
 import cv2
@@ -64,7 +64,7 @@ if opt.phase == "test":
             image["I_m"] = image["I"]
         
         pred = model(image, label, "generate", None, agnostic=agnostic).detach().cpu().squeeze().permute(1, 2, 0).numpy()
-        print(pred.shape)
+        # print(pred.shape)
         pred = (pred + 1) / 2
         
         pred = (pred * 255).astype(np.uint8)
@@ -79,7 +79,118 @@ if opt.phase == "test":
         elif opt.dataset == "vitonHD":
             filename = data_i['name'][0].split("/")[-1]
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename), pred)
-    
-    print()
+        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_origin"), image["I_m"])
+        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_cloth"), image["C_t"])
+        im = tens_to_lab(label["densepose_seg"][0], opt.semantic_nc[2] + 1)
+        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_cloth"), im)
 
 
+def tens_to_im(tens):
+    out = (tens + 1) / 2
+    out.clamp(0, 1)
+    return np.transpose(out.detach().cpu().numpy(), (1, 2, 0))
+def tens_to_lab(tens, num_cl):
+    label_tensor = Colorize(tens, num_cl)
+    label_numpy = np.transpose(label_tensor.numpy(), (1, 2, 0))
+    return label_numpy
+
+def uint82bin(n, count=8):
+    """returns the binary of integer n, count refers to amount of bits"""
+    return ''.join([str((n >> y) & 1) for y in range(count - 1, -1, -1)])
+
+def Colorize(tens, num_cl):
+    cmap = labelcolormap(num_cl)
+    cmap = torch.from_numpy(cmap[:num_cl])
+    size = tens.size()
+    color_image = torch.ByteTensor(3, size[1], size[2]).fill_(0)
+    tens = torch.argmax(tens, dim=0, keepdim=True)
+
+    for label in range(0, len(cmap)):
+        mask = (label == tens[0]).cpu()
+        color_image[0][mask] = cmap[label][0]
+        color_image[1][mask] = cmap[label][1]
+        color_image[2][mask] = cmap[label][2]
+    return color_image
+
+
+def labelcolormap(N):
+    # print('==========N===========')
+    # print(N)
+    # time.sleep(30)
+    if N == 35:
+        cmap = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (111, 74, 0), (81, 0, 81),
+                         (128, 64, 128), (244, 35, 232), (250, 170, 160), (230, 150, 140), (70, 70, 70),
+                         (102, 102, 156), (190, 153, 153),
+                         (180, 165, 180), (150, 100, 100), (150, 120, 90), (153, 153, 153), (153, 153, 153),
+                         (250, 170, 30), (220, 220, 0),
+                         (107, 142, 35), (152, 251, 152), (70, 130, 180), (220, 20, 60), (255, 0, 0), (0, 0, 142),
+                         (0, 0, 70),
+                         (0, 60, 100), (0, 0, 90), (0, 0, 110), (0, 80, 100), (0, 0, 230), (119, 11, 32), (0, 0, 142)],
+                        dtype=np.uint8)
+    elif N == 27:
+        # print('-----N-----27-----')
+        # time.sleep(30)
+        cmap = np.array([  # 25+1
+            [0, 0, 0],
+            [20, 80, 194],
+            [20, 80, 194],
+            [9, 109, 221],
+            [4, 98, 224],
+            [12, 123, 215],
+            [20, 133, 213],
+            [3, 167, 195],
+            [26, 174, 188],
+            [6, 166, 198],
+            [22, 174, 184],
+            [120, 189, 135],
+            [86, 187, 143],
+            [115, 189, 128],
+            [88, 186, 145],
+            [145, 191, 116],
+            [170, 190, 103],
+            [191, 188, 111],
+            [216, 189, 86],
+            [252, 207, 46],
+            [250, 220, 34],
+            [254, 206, 46],
+            [240, 191, 52],
+            [251, 235, 25],
+            [247, 252, 12],
+            [200, 100, 200],
+            [100, 200, 200]
+        ], dtype=np.uint8)
+
+    elif N == 17:
+        cmap = np.array([  # 15
+            [254, 85, 0],  # top
+            [0, 0, 85],  # one piece
+            [85, 51, 0],  # torso
+            [0, 254, 254],  # right arm
+            [51, 169, 220],  # left arm
+            [0, 119, 220],  # jacket
+            [0, 0, 0],  # background
+            [0, 85, 85],  # pants
+            [254, 0, 0],  # hair
+            [0, 128, 0],  # skirt
+            [254, 169, 0],  # left foot
+            [254, 254, 0],  # right foot
+            [0, 0, 254],  # face
+            [169, 254, 85],  # right leg
+            [85, 254, 169],  # left leg
+        ], dtype=np.uint8)
+
+    else:
+        cmap = np.zeros((N, 3), dtype=np.uint8)
+        for i in range(N):
+            r, g, b = 0, 0, 0
+            id = i + 1  # let's give 0 a color
+            for j in range(7):
+                str_id = uint82bin(id)
+                r = r ^ (np.uint8(str_id[-1]) << (7 - j))
+                g = g ^ (np.uint8(str_id[-2]) << (7 - j))
+                b = b ^ (np.uint8(str_id[-3]) << (7 - j))
+                id = id >> 3
+            cmap[i, 0] = r
+            cmap[i, 1] = g
+            cmap[i, 2] = b
+    return cmap

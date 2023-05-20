@@ -289,6 +289,74 @@ class image_saver():
         plt.savefig(self.path + str(cur_iter) + "_" + name)
         plt.close()
 
+class test_image_saver():
+    def __init__(self, opt):
+        self.cols = 4
+        self.rows = 3
+        self.grid = 5
+        self.path = os.path.join("./results", opt.name, "images") + "/"
+        self.opt = opt
+        self.num_cl = {"body_seg": opt.semantic_nc[0] + 1, "cloth_seg": opt.semantic_nc[1] + 1,
+                       "densepose_seg": opt.semantic_nc[2] + 1, "fake_original_parsing": 17, "real_parsing": 17, "fake_target_parsing" : 17}
+
+        os.makedirs(self.path, exist_ok=True)
+
+    def visualize_batch(self, model, image, label, cur_iter, agnostic=None, human_parsing=None):
+        if "body" in self.opt.segmentation:
+            self.save_images(label["body_seg"], "body_seg", cur_iter, is_label=True)
+        if "cloth" in self.opt.segmentation:
+            self.save_images(label["cloth_seg"], "cloth_seg", cur_iter, is_label=True)
+        if "densepose" in self.opt.segmentation:
+            self.save_images(label["densepose_seg"], "densepose_seg", cur_iter, is_label=True)
+        # print('-------------------------------------')
+        # print(label["densepose_seg"])
+        # print('--dense---------------00000----------')
+        # time.sleep(30)
+        self.save_images(image['I'], "real", cur_iter)
+        self.save_images(human_parsing, "real_parsing", cur_iter, is_label=True)
+        self.save_images(image['target_cloth'], "fake_target_cloth", cur_iter)
+        with torch.no_grad():
+            model.eval()
+            fake, C_transform = model.module.netG(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"], label["cloth_seg"],
+                                     label["densepose_seg"], agnostic=agnostic)
+            fake_parsing = fake[:, 3:, :, :]
+            fake = fake[:, 0:3, :, :]
+            fake_target, C_target_transform = model.module.netG(image["I_m"], image["target_cloth"], image["I_bottom"], image["target_cloth_mask"], label["body_seg"], label["cloth_seg"],
+                                            label["densepose_seg"], agnostic=agnostic)
+            fake_target_parsing = fake_target[:, 3:, :, :]
+            fake_target = fake_target[:, 0:3, :, :]
+            self.save_images(fake, "fake_original", cur_iter)
+            self.save_images(fake_parsing, "fake_original_parsing", cur_iter, is_label=True)
+            self.save_images(C_transform, "fake_original_cloth_transform", cur_iter)
+            self.save_images(fake_target, "fake_target", cur_iter)
+            self.save_images(fake_target_parsing, "fake_target_parsing", cur_iter, is_label=True)
+            self.save_images(C_target_transform, "fake_target_cloth_transform", cur_iter)
+            model.train()
+            if not self.opt.no_EMA:
+                model.eval()
+                fake, C_transform = model.module.netEMA(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"], label["cloth_seg"],
+                                           label["densepose_seg"], agnostic=agnostic)
+                fake_parsing = fake[:, 3:, :, :]
+                fake = fake[:, 0:3, :, :]
+                self.save_images(fake, "fake_ema", cur_iter)
+                model.train()
+
+    def save_images(self, batch, name, cur_iter, is_label=False):
+        fig = plt.figure()
+        for i in range(min(self.rows * self.cols, len(batch))):
+            if is_label:
+                im = tens_to_lab(batch[i], self.num_cl[name])
+            else:
+                im = tens_to_im(batch[i])
+            plt.axis("off")
+            fig.add_subplot(self.rows, self.cols, i + 1)
+            plt.axis("off")
+            plt.imshow(im)
+        fig.tight_layout()
+        plt.savefig(self.path + str(cur_iter) + "_" + name)
+        plt.close()
+
+
 
 def tens_to_im(tens):
     out = (tens + 1) / 2
