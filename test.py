@@ -191,7 +191,8 @@ if opt.phase == "test":
         if opt.no_seg:
             image["I_m"] = image["I"]
         
-        pred, parsing = model(image, label, "generate", None, agnostic=agnostic).detach().cpu().squeeze().permute(1, 2, 0).numpy()
+        pred, parsing = model(image, label, "generate", None, agnostic=agnostic)
+        pred = pred.detach().cpu().squeeze().permute(1, 2, 0).numpy()
         # print(pred.shape)
         pred = (pred + 1) / 2
         pred = (pred * 255).astype(np.uint8)
