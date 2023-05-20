@@ -61,7 +61,7 @@ class fid_pytorch():
                 agnostic = data_i["agnostic"].cuda() if self.opt.bpgm_id.find("old") >= 0 else None
                 
                 if self.opt.no_EMA:
-                    generated = netG(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"],
+                    generated, transform = netG(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"],
                                                   label["cloth_seg"], label["densepose_seg"], agnostic=agnostic,
                                                   human_parsing=human_parsing)
                     """image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"],
@@ -69,7 +69,7 @@ class fid_pytorch():
                                                   human_parsing=human_parsing
                                                   image["I_m"], image["C_t"], label["body_seg"], label["cloth_seg"], label["densepose_seg"], agnostic=agnostic"""
                 else:
-                    generated = netEMA(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"],
+                    generated, transform = netEMA(image["I_m"], image["C_t"], image["I_bottom"], image["cloth_mask"], label["body_seg"],
                                                   label["cloth_seg"], label["densepose_seg"], agnostic=agnostic,
                                                   human_parsing=human_parsing)
 
