@@ -186,7 +186,8 @@ if opt.phase == "test":
             filename = data_i['name'][0].split("/")[-1]
         elif opt.dataset == "vitonHD":
             filename = data_i['name'][0].split("/")[-1]
-        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename), pred)
+        cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename,"_pred"), pred)
+
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_origin"), tens_to_im(image["I"][0]))
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_cloth"), tens_to_im(image["C_t"][0]))
         im = tens_to_lab(label["densepose_seg"][0], opt.semantic_nc[2] + 1)
