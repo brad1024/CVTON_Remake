@@ -318,6 +318,7 @@ class VitonHDDataset(Dataset):
         if self.phase == "train":
             densepose_seg = cv2.imread(
                 os.path.join(self.db_path, self.db_f, "image-densepose", df_row["poseA"].replace(".jpg", ".png")))
+            print("==phase in train==")
         else:
             densepose_seg = cv2.imread(
                 os.path.join(self.db_path, self.db_f, "image-densepose", df_row["poseA"]))
