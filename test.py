@@ -15,6 +15,15 @@ from dataloaders.VitonDataset import VitonDataset
 from dataloaders.VitonHDDataset import VitonHDDataset
 from utils.plotter import evaluate, plot_simple_reconstructions
 
+def tens_to_im(tens):
+    out = (tens + 1) / 2
+    out.clamp(0, 1)
+    return np.transpose(out.detach().cpu().numpy(), (1, 2, 0))
+def tens_to_lab(tens, num_cl):
+    label_tensor = Colorize(tens, num_cl)
+    label_numpy = np.transpose(label_tensor.numpy(), (1, 2, 0))
+    return label_numpy
+
 #--- read options ---#
 opt = config.read_arguments(train=False)
 
@@ -82,16 +91,6 @@ if opt.phase == "test":
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_cloth"), tens_to_im(image["C_t"]))
         im = tens_to_lab(label["densepose_seg"][0], opt.semantic_nc[2] + 1)
         cv2.imwrite(os.path.join("results", opt.name, opt.phase + "_images", filename, "_densepose"), im)
-
-
-def tens_to_im(tens):
-    out = (tens + 1) / 2
-    out.clamp(0, 1)
-    return np.transpose(out.detach().cpu().numpy(), (1, 2, 0))
-def tens_to_lab(tens, num_cl):
-    label_tensor = Colorize(tens, num_cl)
-    label_numpy = np.transpose(label_tensor.numpy(), (1, 2, 0))
-    return label_numpy
 
 def uint82bin(n, count=8):
     """returns the binary of integer n, count refers to amount of bits"""
