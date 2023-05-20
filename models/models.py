@@ -147,7 +147,7 @@ class OASIS_model(nn.Module):
 
                 if self.opt.add_cd_loss:
                     # output_CD = self.netCD(fake, image["C_t_swap"])
-                    output_CD = self.netCD(fake, image["C_t"])
+                    output_CD = self.netCD(fake_target[:, :3, :, :], image["target_cloth"])
                     loss_G_adv_CD = losses_computer.loss_adv(output_CD, for_real=True)
                     loss_G += loss_G_adv_CD
                 else:
@@ -170,14 +170,14 @@ class OASIS_model(nn.Module):
                     loss_G_adv_BD = None
 
                 if self.opt.add_pd_loss:
-                    fake = generate_patches(self.opt, fake, label_centroids)
+                    fake_PD = generate_patches(self.opt, fake_target[:, :3,:,:], label_centroids)
 
                     # for i, fake_sample in enumerate(fake):
                     #     # DELET AFTER
                     #     _fake = ((fake_sample * 0.5 + 0.5).detach().permute(1, 2, 0).cpu().numpy() * 255).astype(np.uint8)
                     #     Image.fromarray(_fake).save(os.path.join("sample", "patch_%d.png" % i))    
 
-                    output_PD = self.netPD(fake)
+                    output_PD = self.netPD(fake_PD)
                     loss_G_adv_PD = losses_computer.loss_adv(output_PD, for_real=True)
                     loss_G += loss_G_adv_PD
                 else:
