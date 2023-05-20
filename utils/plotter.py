@@ -84,14 +84,16 @@ def plot_simple_reconstructions(model, val_dataset, filename, opt, n_imgs=20, sa
             image, label, _ = models.preprocess_input(opt, {"image": {"I_m": I if opt.no_seg else I_m, "C_t": C_t, "C_t_flip": C_t_flip},
                                                          "body_label": body_label, "cloth_label": cloth_label, "densepose_label": densepose_label})
             agnostic = agnostic if opt.bpgm_id.find("old") >= 0 else None
-            
-            out.append(model(image, label, "generate", None, agnostic=agnostic).detach().cpu())
+
+            out_model, parsing = model(image, label, "generate", None, agnostic=agnostic).detach().cpu()
+            out.append(out_model)
             
             image["C_t"] = image["C_t_flip"]
             label["cloth_seg"] = model.module.edit_cloth_seg(image["C_t"], label["body_seg"], label["cloth_seg"])
             cloth_seg_swapped.append(label["cloth_seg"])
-            
-            swapped.append(model(image, label, "generate", None, agnostic=agnostic).detach().cpu())
+
+            swap, parsing = model(image, label, "generate", None, agnostic=agnostic).detach().cpu()
+            swapped.append(swap)
         
         input_im = (input_im + 1) / 2
         x0 = (x0 + 1) / 2
@@ -179,7 +181,7 @@ def evaluate(model, val_dataset, opt):
                 if opt.no_seg:
                     image["I_m"] = image["I"]
                 
-                pred_y = model(image, label, "generate", None, agnostic=agnostic).detach()
+                pred_y, parsing = model(image, label, "generate", None, agnostic=agnostic).detach()
                 
                 val_pred_y.append(pred_y.cpu())
                 lpips.append(lpips_fn(pred_y, image["I"]))
