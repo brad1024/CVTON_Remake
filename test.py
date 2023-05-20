@@ -161,7 +161,7 @@ if opt.phase == "test":
     
     test_dataloader = DataLoader(dataset, batch_size=1, shuffle=False, drop_last=False)
     
-    os.makedirs(os.path.join("results", opt.name, opt.phase + "_images"), exist_ok=True)
+    os.makedirs(os.path.join("results_test", opt.name, opt.phase + "_images"), exist_ok=True)
     
     for i, data_i in enumerate(test_dataloader):
         print(i, "/", len(test_dataloader), end="\r")
