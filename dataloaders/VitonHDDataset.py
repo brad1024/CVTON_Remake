@@ -206,6 +206,7 @@ class VitonHDDataset(Dataset):
         ])
 
         self.mask_transform = transforms.Compose([
+            transforms.ToPILImage(),
             transforms.Resize(opt.img_size),
             transforms.ToTensor(),
         ])
@@ -259,22 +260,22 @@ class VitonHDDataset(Dataset):
         for i, color in enumerate(vitonHD_parse_labels):
             cloth_seg_transf[np.all(cloth_seg == color, axis=-1)] = i
             if i < 3:
-                mask_top[np.all(cloth_seg == color, axis=-1)] = 1.0
+                mask_top[np.all(cloth_seg == color, axis=-1)] = 255.0
             if i < (
                     6 + self.opt.no_bg):  # this works, because colors are sorted in a specific way with background being the 8th. # or i == 7 or i == 9
-                mask[np.all(cloth_seg == color, axis=-1)] = 1.0
+                mask[np.all(cloth_seg == color, axis=-1)] = 255.0
             if self.opt.no_bottom:
                 if i == 7 or i == 9:
-                    mask[np.all(cloth_seg == color, axis=-1)] = 1.0
-                    mask_bottom[np.all(cloth_seg == color, axis=-1)] = 1.0
+                    mask[np.all(cloth_seg == color, axis=-1)] = 255.0
+                    mask_bottom[np.all(cloth_seg == color, axis=-1)] = 255.0
         cloth_seg_transf = np.expand_dims(cloth_seg_transf, 0)
         cloth_seg_transf = torch.tensor(cloth_seg_transf)
 
         mask = np.repeat(np.expand_dims(mask, -1), 3, axis=-1).astype(np.uint8)
-        masked_image = image * (1 - mask)
+        masked_image = image * (1 - mask/255.0)
 
         mask_bottom = np.repeat(np.expand_dims(mask_bottom, -1), 3, axis=-1).astype(np.uint8)
-        mask_image_bottom = image * mask_bottom
+        mask_image_bottom = image * mask_bottom/255.0
 
         mask_top = np.repeat(np.expand_dims(mask_top, -1), 3, axis=-1).astype(np.uint8)
 
@@ -370,7 +371,7 @@ class VitonHDDataset(Dataset):
         densepose_seg_transf_target = np.expand_dims(densepose_seg_transf_target, 0)
         densepose_seg_transf_target = torch.tensor(densepose_seg_transf_target)
         # scale the inputs to range [-1, 1]
-        cloth_mask = self.mask_transform(cloth_mask)
+        cloth_mask = self.transform(cloth_mask)
         target_cloth_mask = self.transform(target_cloth_mask)
         image = self.transform(image)
         image = (image - 0.5) / 0.5
