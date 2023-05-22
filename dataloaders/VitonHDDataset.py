@@ -205,6 +205,11 @@ class VitonHDDataset(Dataset):
             transforms.ToTensor(),
         ])
 
+        self.mask_transform = transforms.Compose([
+            transforms.Resize(opt.img_size),
+            transforms.ToTensor(),
+        ])
+
         if phase in {"train", "train_whole"} and self.opt.add_pd_loss:
             self.hand_indices = [3, 4, 5]
             self.body_label_centroids = [None] * len(self.filepath_df)
@@ -365,6 +370,8 @@ class VitonHDDataset(Dataset):
         densepose_seg_transf_target = np.expand_dims(densepose_seg_transf_target, 0)
         densepose_seg_transf_target = torch.tensor(densepose_seg_transf_target)
         # scale the inputs to range [-1, 1]
+        cloth_mask = self.mask_transform(cloth_mask)
+        target_cloth_mask = self.transform(target_cloth_mask)
         image = self.transform(image)
         image = (image - 0.5) / 0.5
         masked_image = self.transform(masked_image)
@@ -373,14 +380,14 @@ class VitonHDDataset(Dataset):
         mask_image_bottom = (mask_image_bottom - 0.5) / 0.5
         cloth_image = self.transform(cloth_image)
         cloth_image = (cloth_image - 0.5) / 0.5
+        cloth_image = torch.mul(cloth_image, cloth_mask)
         target_cloth = self.transform(target_cloth)
         target_cloth = (target_cloth - 0.5) / 0.5
-        target_cloth_mask = self.transform(target_cloth_mask)
-        target_cloth_mask = (target_cloth_mask - 0.5) / 0.5
-        cloth_mask = self.transform(cloth_mask)
-        cloth_mask = (cloth_mask - 0.5) / 0.5
-        mask_bottom = self.transform(mask_bottom)
-        mask_top = self.transform(mask_top)
+        target_cloth = torch.mul(target_cloth, target_cloth_mask)
+        #target_cloth_mask = (target_cloth_mask - 0.5) / 0.5
+        #cloth_mask = (cloth_mask - 0.5) / 0.5
+        mask_bottom = self.mask_transform(mask_bottom)
+        mask_top = self.mask_transform(mask_top)
         #mask_bottom = (mask_bottom - 0.5) / 0.5
 
         if self.opt.bpgm_id.find("old") >= 0:

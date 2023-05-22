@@ -147,6 +147,7 @@ class OASIS_model(nn.Module):
 
                 if self.opt.add_cd_loss:
                     # output_CD = self.netCD(fake, image["C_t_swap"])
+
                     output_CD = self.netCD(fake_target[:, :3, :, :], image["target_cloth"])
                     loss_G_adv_CD = losses_computer.loss_adv(output_CD, for_real=True)
                     loss_G += loss_G_adv_CD
@@ -163,7 +164,7 @@ class OASIS_model(nn.Module):
                 if self.opt.add_bd_loss:
                     mask_bottom = label["bottom_mask"].detach().clone()
                     #mask_bottom.expand(-1, 3)
-                    output_BD = self.netBD(fake*mask_bottom)
+                    output_BD = self.netBD(torch.mul(fake, mask_bottom))
                     loss_G_adv_BD = losses_computer.loss_adv(output_BD, for_real=True)
                     loss_G += loss_G_adv_BD
                 else:
@@ -442,7 +443,7 @@ class OASIS_model(nn.Module):
                                                   agnostic=agnostic)
                 mask_bottom = label["bottom_mask"].detach().clone()
                 #mask_bottom.expand(-1, 3)
-                output_BD_fake = self.netBD(fake[:, 0:3, :, :] * mask_bottom)
+                output_BD_fake = self.netBD(torch.mul(fake[:, 0:3, :, :], mask_bottom))
                 loss_BD_fake = losses_computer.loss_adv(output_BD_fake, for_real=False)
                 loss_BD += loss_BD_fake
                 output_BD_real = self.netBD(image["I_bottom"])
