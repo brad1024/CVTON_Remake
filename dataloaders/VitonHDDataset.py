@@ -277,6 +277,7 @@ class VitonHDDataset(Dataset):
 
         mask_bottom = np.repeat(np.expand_dims(mask_bottom, -1), 3, axis=-1).astype(np.uint8)
         mask_image_bottom = image * mask_bottom/255
+        masked_image_bottom = masked_image_bottom.astype(np.uint8)
 
         mask_top = np.repeat(np.expand_dims(mask_top, -1), 3, axis=-1).astype(np.uint8)
 
