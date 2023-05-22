@@ -373,10 +373,10 @@ class VitonHDDataset(Dataset):
         # scale the inputs to range [-1, 1]
         cloth_mask = self.transform(cloth_mask)
         target_cloth_mask = self.transform(target_cloth_mask)
-        print(type(image))
+        print(image.dtype())
         image = self.transform(image)
         image = (image - 0.5) / 0.5
-        print(type(masked_image))
+        print(masked_image.dtype())
         masked_image = self.transform(masked_image)
         masked_image = (masked_image - 0.5) / 0.5
         mask_image_bottom = self.transform(mask_image_bottom)
