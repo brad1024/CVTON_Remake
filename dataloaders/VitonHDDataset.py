@@ -273,6 +273,7 @@ class VitonHDDataset(Dataset):
 
         mask = np.repeat(np.expand_dims(mask, -1), 3, axis=-1).astype(np.uint8)
         masked_image = image * (1 - mask/255)
+        masked_image = masked_image.astype(np.uint8)
 
         mask_bottom = np.repeat(np.expand_dims(mask_bottom, -1), 3, axis=-1).astype(np.uint8)
         mask_image_bottom = image * mask_bottom/255
@@ -373,10 +374,10 @@ class VitonHDDataset(Dataset):
         # scale the inputs to range [-1, 1]
         cloth_mask = self.transform(cloth_mask)
         target_cloth_mask = self.transform(target_cloth_mask)
-        print(image.dtype)
+        #print(image.dtype)
         image = self.transform(image)
         image = (image - 0.5) / 0.5
-        print(masked_image.dtype)
+        #print(masked_image.dtype)
         masked_image = self.transform(masked_image)
         masked_image = (masked_image - 0.5) / 0.5
         mask_image_bottom = self.transform(mask_image_bottom)
