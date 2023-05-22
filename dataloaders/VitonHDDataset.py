@@ -254,9 +254,9 @@ class VitonHDDataset(Dataset):
         # get the mask without upper clothes / dress, hands, neck
         # additionally, get cloth segmentations by cloth part
         cloth_seg_transf = np.zeros(self.opt.img_size)
-        mask = np.zeros(self.opt.img_size)
-        mask_bottom = np.zeros(self.opt.img_size)
-        mask_top = np.zeros(self.opt.img_size)
+        mask = np.zeros(self.opt.img_size).astype(np.float32)
+        mask_bottom = np.zeros(self.opt.img_size).astype(np.float32)
+        mask_top = np.zeros(self.opt.img_size).astype(np.float32)
         for i, color in enumerate(vitonHD_parse_labels):
             cloth_seg_transf[np.all(cloth_seg == color, axis=-1)] = i
             if i < 3:
