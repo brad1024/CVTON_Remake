@@ -394,11 +394,11 @@ class VitonHDDataset(Dataset):
         target_cloth_mask = self.transform(target_cloth_mask)
 
         mask_bottom = mask_bottom.transpose(2, 0, 1)
-        mask_bottom = np.resize(mask_bottom, (3, 64, 48))
+        mask_bottom = np.resize(mask_bottom, (3, 256, 192))
         mask_bottom = torch.as_tensor(mask_bottom)
 
         mask_top = mask_top.transpose(2, 0, 1)
-        mask_top = np.resize(mask_top, (3, 64, 48))
+        mask_top = np.resize(mask_top, (3, 256, 192))
         mask_top = torch.as_tensor(mask_top)
 
 
