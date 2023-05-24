@@ -206,9 +206,9 @@ class VitonHDDataset(Dataset):
         ])
 
         self.mask_transform = transforms.Compose([
-            transforms.ToPILImage(),
+            #transforms.ToPILImage(),
             transforms.Resize(opt.img_size),
-            transforms.ToTensor(),
+            #transforms.ToTensor(),
         ])
 
         if phase in {"train", "train_whole"} and self.opt.add_pd_loss:
@@ -216,6 +216,14 @@ class VitonHDDataset(Dataset):
             self.body_label_centroids = [None] * len(self.filepath_df)
         else:
             self.body_label_centroids = None
+
+    def tensor_to_image(t):
+        tensor = t * 255
+        tensor = np.array(tensor, dtype=np.uint8)
+        if np.ndim(tensor) > 3:
+            assert tensor.shape[0] == 1
+            tensor = tensor[0]
+        return Image.fromarray(tensor)
 
     def __getitem__(self, index):
         df_row = self.filepath_df.iloc[index]
@@ -260,24 +268,28 @@ class VitonHDDataset(Dataset):
         for i, color in enumerate(vitonHD_parse_labels):
             cloth_seg_transf[np.all(cloth_seg == color, axis=-1)] = i
             if i < 3:
-                mask_top[np.all(cloth_seg == color, axis=-1)] = 255.0
+                mask_top[np.all(cloth_seg == color, axis=-1)] = 1
             if i < (
                     6 + self.opt.no_bg):  # this works, because colors are sorted in a specific way with background being the 8th. # or i == 7 or i == 9
-                mask[np.all(cloth_seg == color, axis=-1)] = 255.0
+                mask[np.all(cloth_seg == color, axis=-1)] = 1
             if self.opt.no_bottom:
                 if i == 7 or i == 9:
-                    mask[np.all(cloth_seg == color, axis=-1)] = 255.0
-                    mask_bottom[np.all(cloth_seg == color, axis=-1)] = 255.0
+                    mask[np.all(cloth_seg == color, axis=-1)] = 1
+                    mask_bottom[np.all(cloth_seg == color, axis=-1)] = 1
+
+
         cloth_seg_transf = np.expand_dims(cloth_seg_transf, 0)
         cloth_seg_transf = torch.tensor(cloth_seg_transf)
 
         mask = np.repeat(np.expand_dims(mask, -1), 3, axis=-1).astype(np.uint8)
-        masked_image = image * (1 - mask/255)
+        masked_image = image * (1 - mask)
         masked_image = masked_image.astype(np.uint8)
 
         mask_bottom = np.repeat(np.expand_dims(mask_bottom, -1), 3, axis=-1).astype(np.uint8)
-        mask_image_bottom = image * mask_bottom/255
+
+        mask_image_bottom = (image * mask_bottom)
         mask_image_bottom = mask_image_bottom.astype(np.uint8)
+
 
         mask_top = np.repeat(np.expand_dims(mask_top, -1), 3, axis=-1).astype(np.uint8)
 
@@ -324,13 +336,13 @@ class VitonHDDataset(Dataset):
         body_seg_transf = torch.tensor(body_seg_transf)
 
         densepose_seg = cv2.imread(
-            os.path.join(self.db_path, self.db_f, "image-densepose", df_row["poseA"].replace(".jpg", ".png")))
+            os.path.join(self.db_path, self.db_f, "image-densepose", df_row["poseA"]))
         densepose_seg = cv2.cvtColor(densepose_seg, cv2.COLOR_BGR2RGB)
         densepose_seg = cv2.resize(densepose_seg, self.opt.img_size[::-1],
                                    interpolation=cv2.INTER_NEAREST)  # INTER_LINEAR
 
         densepose_seg_target = cv2.imread(
-            os.path.join(self.db_path, self.db_f, "image-densepose", df_row["target"].replace(".jpg", ".png")))
+            os.path.join(self.db_path, self.db_f, "image-densepose", df_row["target"]))
         densepose_seg_target = cv2.cvtColor(densepose_seg_target, cv2.COLOR_BGR2RGB)
         densepose_seg_target = cv2.resize(densepose_seg_target, self.opt.img_size[::-1],
                                    interpolation=cv2.INTER_NEAREST)  # INTER_LINEAR
@@ -373,8 +385,25 @@ class VitonHDDataset(Dataset):
         densepose_seg_transf_target = np.expand_dims(densepose_seg_transf_target, 0)
         densepose_seg_transf_target = torch.tensor(densepose_seg_transf_target)
         # scale the inputs to range [-1, 1]
+
+        #cloth_mask = self.transform(cloth_mask)
         cloth_mask = self.transform(cloth_mask)
+
+
+        #target_cloth_mask = self.transform(target_cloth_mask)
         target_cloth_mask = self.transform(target_cloth_mask)
+
+        mask_bottom = mask_bottom.transpose(2, 0, 1)
+        mask_bottom = np.resize(mask_bottom, (3, 64, 48))
+        mask_bottom = torch.as_tensor(mask_bottom)
+
+        mask_top = mask_top.transpose(2, 0, 1)
+        mask_top = np.resize(mask_top, (3, 64, 48))
+        mask_top = torch.as_tensor(mask_top)
+
+
+
+
         #print(image.dtype)
         image = self.transform(image)
         image = (image - 0.5) / 0.5
@@ -384,16 +413,19 @@ class VitonHDDataset(Dataset):
         mask_image_bottom = self.transform(mask_image_bottom)
         mask_image_bottom = (mask_image_bottom - 0.5) / 0.5
         cloth_image = self.transform(cloth_image)
-        cloth_image = (cloth_image - 0.5) / 0.5
         cloth_image = torch.mul(cloth_image, cloth_mask)
+        cloth_image = (cloth_image - 0.5) / 0.5
+
         target_cloth = self.transform(target_cloth)
         target_cloth = (target_cloth - 0.5) / 0.5
         target_cloth = torch.mul(target_cloth, target_cloth_mask)
         #target_cloth_mask = (target_cloth_mask - 0.5) / 0.5
         #cloth_mask = (cloth_mask - 0.5) / 0.5
-        mask_bottom = self.mask_transform(mask_bottom)
-        mask_top = self.mask_transform(mask_top)
+
         #mask_bottom = (mask_bottom - 0.5) / 0.5
+        #t = transforms.ToPILImage()
+        #pil = t(masked_image)
+        #pil.show()
 
         if self.opt.bpgm_id.find("old") >= 0:
             # load pose points
@@ -509,3 +541,4 @@ class VitonHDDataset(Dataset):
 
     def name(self):
         return "VitonHDDataset"
+
