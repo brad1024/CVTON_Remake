@@ -417,8 +417,9 @@ class VitonHDDataset(Dataset):
         cloth_image = (cloth_image - 0.5) / 0.5
 
         target_cloth = self.transform(target_cloth)
-        target_cloth = (target_cloth - 0.5) / 0.5
         target_cloth = torch.mul(target_cloth, target_cloth_mask)
+        target_cloth = (target_cloth - 0.5) / 0.5
+        
         #target_cloth_mask = (target_cloth_mask - 0.5) / 0.5
         #cloth_mask = (cloth_mask - 0.5) / 0.5
 
