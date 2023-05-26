@@ -226,7 +226,7 @@ class HumanParsingDiscriminator(nn.Module):
         """
         self.parsing_down_all = nn.Sequential(*parsing_down_all)
         norm_layer = norms.get_spectral_norm(opt)
-        """
+
         self.parsing_end = nn.Sequential(
             nn.LeakyReLU(0.2, False),
             norm_layer(nn.Conv2d(512, 64, kernel_size=1))
@@ -239,7 +239,7 @@ class HumanParsingDiscriminator(nn.Module):
             nn.LeakyReLU(0.2, False),
             norm_layer(nn.Conv2d(512, 64, kernel_size=1))
         )
-        """
+
         self.parsing_all_end = nn.Sequential(
             nn.LeakyReLU(0.2, False),
             norm_layer(nn.Conv2d(512, 64, kernel_size=1))
