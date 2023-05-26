@@ -205,26 +205,26 @@ class HumanParsingDiscriminator(nn.Module):
             self.channels = [45, 128, 128, 256, 256, 256, 512, 512, 512]
         else:
             raise NotImplementedError
-        """
+
         parsing_down = []
         C_t_mask_down = []
-        densepose_down = []"""
-        parsing_down_all = []
+        densepose_down = []
+
+        # parsing_down_all = []
         for i in range(opt.num_res_blocks):
-            parsing_down_all.append(residual_block_D(self.channels[i], self.channels[i + 1], opt, -1, first=(i == 0)))
-            """
+            # parsing_down_all.append(residual_block_D(self.channels[i], self.channels[i + 1], opt, -1, first=(i == 0)))
             parsing_down.append(
                 residual_block_D(self.channels_parsing[i], self.channels_parsing[i + 1], opt, -1, first=(i == 0)))
             C_t_mask_down.append(
                 residual_block_D(self.channels_mask[i], self.channels_mask[i + 1], opt, -1, first=(i == 0)))
             densepose_down.append(
-                residual_block_D(self.channels_densepose[i], self.channels_densepose[i + 1], opt, -1, first=(i == 0)))"""
-        """
+                residual_block_D(self.channels_densepose[i], self.channels_densepose[i + 1], opt, -1, first=(i == 0)))
+
         self.parsing_down = nn.Sequential(*parsing_down)
         self.C_t_mask_down = nn.Sequential(*C_t_mask_down)
         self.densepose_down = nn.Sequential(*densepose_down)
-        """
-        self.parsing_down_all = nn.Sequential(*parsing_down_all)
+
+        # self.parsing_down_all = nn.Sequential(*parsing_down_all)
         norm_layer = norms.get_spectral_norm(opt)
 
         self.parsing_end = nn.Sequential(
