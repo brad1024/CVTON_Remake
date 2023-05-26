@@ -249,7 +249,7 @@ class HumanParsingDiscriminator(nn.Module):
             nn.LeakyReLU(0.2, False),
             nn.Flatten(),
             # norm_layer(nn.Linear(2 * 64 * 4 * (2 + (opt.dataset == "viton")), out_features=1))
-            norm_layer(nn.Linear(64 * 4 * 3, out_features=1))
+            norm_layer(nn.Linear(2 * 64 * 4 * 3, out_features=1))
         )
         self.final_linear = nn.Sequential(
             nn.LeakyReLU(0.2, False),
@@ -264,6 +264,9 @@ class HumanParsingDiscriminator(nn.Module):
         densepose_enc = self.densepose_end(self.densepose_down(densepose))
 
         # x = self.linear(parsing_all_enc)
+        """print(parsing_enc.shape)
+        print(C_t_mask_enc.shape)
+        print(densepose_enc.shape)"""
         x = self.linear(torch.cat((parsing_enc, C_t_mask_enc), dim=1))
         y = self.linear(torch.cat((parsing_enc, densepose_enc), dim=1))
         out = self.final_linear(torch.cat((x, y), dim=1))
