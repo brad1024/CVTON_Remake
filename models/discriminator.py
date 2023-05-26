@@ -252,13 +252,14 @@ class HumanParsingDiscriminator(nn.Module):
         )
 
     def forward(self, parsing, C_t_mask, densepose):
-        parsing_all_enc = self.parsing_all_end(self.parsing_down_all(torch.cat((parsing, C_t_mask, densepose), dim=1)))
-        """
+        # parsing_all_enc = self.parsing_all_end(self.parsing_down_all(torch.cat((parsing, C_t_mask, densepose), dim=1)))
+
         parsing_enc = self.parsing_end(self.parsingdown(parsing))
         C_t_mask_enc = self.C_t_mask_end(self.C_t_mask_down(C_t_mask))
         densepose_enc = self.densepose_end(self.densepose_down(densepose))
-        """
-        x = self.linear(parsing_all_enc)
+
+        # x = self.linear(parsing_all_enc)
+        x = self.linear(torch.cat((parsing_enc, C_t_mask_enc, densepose_enc), dim=1))
         return x
 
 
