@@ -252,7 +252,8 @@ class HumanParsingDiscriminator(nn.Module):
             norm_layer(nn.Linear(2 * 64 * 4 * 3, out_features=1))
         )
         self.final_linear = nn.Sequential(
-            nn.LeakyReLU(0.2, False),
+            #nn.LeakyReLU(0.2, False),
+            nn.Flatten(),
             norm_layer(nn.Linear(2, 1))
         )
 
